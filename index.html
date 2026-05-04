@@ -728,7 +728,73 @@ footer { text-align:center; padding:2rem 1rem; color:var(--faint); font-size:.68
       <button class="dash-x" onclick="closeDash()">✕</button>
     </div>
     <div class="dash-body">
-      <div class="dash-intro">Your logged sets are tracked automatically. Select a lift to see your weight progression over time. Log body stats below to track weight, body fat, and resting heart rate.</div>
+      <div class="dash-intro">Your logged sets are tracked automatically. Select a lift to see your weight progression over time. Log body stats below to track weight, body fat, and resting heart rate. Import a Garmin Connect CSV to log run sessions automatically.</div>
+
+      <div style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap;">
+        <button class="lift-tab" onclick="openManualTime()" style="background:var(--elevated);border-color:var(--accent2);color:var(--accent2);">⏱ Log Session Time</button>
+        <label class="lift-tab" style="background:var(--elevated);border-color:var(--info);color:var(--info);cursor:pointer;">
+          📥 Import Garmin CSV
+          <input type="file" accept=".csv,.fit" style="display:none;" onchange="importGarminCSV(event)">
+        </label>
+      </div>
+
+      <!-- Manual time entry panel -->
+      <div id="manual-time-panel" style="display:none;background:var(--elevated);border:1px solid var(--line2);border-radius:10px;padding:1rem;margin-bottom:1rem;">
+        <div style="font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent2);font-weight:600;margin-bottom:.75rem;">Log Session Time Manually</div>
+        <div class="dash-log-row">
+          <div class="dash-log-field">
+            <div class="dash-log-lbl">Phase</div>
+            <select class="dash-log-input" id="mt-phase" onchange="updateManualWeekOptions()">
+              <option value="1">Phase 1 (Wks 1–16)</option>
+              <option value="2">Phase 2 (Wks 17–36)</option>
+              <option value="3">Phase 3 (Wks 37–48)</option>
+            </select>
+          </div>
+          <div class="dash-log-field">
+            <div class="dash-log-lbl">Week</div>
+            <select class="dash-log-input" id="mt-week"></select>
+          </div>
+          <div class="dash-log-field">
+            <div class="dash-log-lbl">Day</div>
+            <select class="dash-log-input" id="mt-day">
+              <option value="0">Mon</option><option value="1">Tue</option>
+              <option value="2">Wed</option><option value="3">Thu</option>
+              <option value="4">Fri</option>
+            </select>
+          </div>
+        </div>
+        <div class="dash-log-row">
+          <div class="dash-log-field">
+            <div class="dash-log-lbl">Duration (mm:ss or hh:mm:ss)</div>
+            <input class="dash-log-input" id="mt-time" type="text" placeholder="45:30" inputmode="text">
+          </div>
+          <div class="dash-log-field">
+            <div class="dash-log-lbl">Avg HR (bpm)</div>
+            <input class="dash-log-input" id="mt-hr" type="number" placeholder="148" inputmode="numeric">
+          </div>
+          <div class="dash-log-field">
+            <div class="dash-log-lbl">Avg Pace (/km)</div>
+            <input class="dash-log-input" id="mt-pace" type="text" placeholder="5:20" inputmode="text">
+          </div>
+        </div>
+        <div class="dash-log-row">
+          <div class="dash-log-field">
+            <div class="dash-log-lbl">Distance (km)</div>
+            <input class="dash-log-input" id="mt-dist" type="number" step="0.1" placeholder="8.0" inputmode="decimal">
+          </div>
+          <div class="dash-log-field" style="flex:2">
+            <div class="dash-log-lbl">Notes</div>
+            <input class="dash-log-input" id="mt-note" type="text" placeholder="How did it feel?">
+          </div>
+        </div>
+        <div style="display:flex;gap:.5rem;margin-top:.35rem;">
+          <button class="dash-log-btn" style="flex:2" onclick="saveManualTime()">✓ Save Session Log</button>
+          <button class="dash-log-btn" style="flex:1;background:var(--elevated);border:1px solid var(--line2);color:var(--sub);" onclick="closeManualTime()">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Garmin import result -->
+      <div id="garmin-result" style="display:none;background:var(--info-dim);border:1px solid rgba(78,179,245,.2);border-radius:10px;padding:.85rem;margin-bottom:1rem;font-size:.78rem;color:var(--info);line-height:1.6;"></div>
 
       <div class="lift-tabs" id="lift-tabs"></div>
       <div class="dash-chart-wrap">
@@ -1667,38 +1733,51 @@ function refreshCard(ph,wNum,dayIdx){
 }
 
 // ─── SESSION TIMER ────────────────────────────────────────────────
-// Uses wall-clock timestamps so the timer keeps running when the screen
-// is locked or the user switches to another app/tab
-let timerStartEpoch=0;   // Date.now() when session started (or resumed)
-let timerElapsedMs=0;    // ms accumulated before last pause
-let timerInterval=null;
-let timerRunning=false;
+// Wall-clock based + persisted to localStorage so full app kills
+// (Android background eviction) can resume the correct time.
+const TIMER_SK = 'hyrox_timer_v1';
+let timerStartEpoch = 0;
+let timerElapsedMs  = 0;
+let timerInterval   = null;
+let timerRunning    = false;
+
+function persistTimer(){
+  try{ localStorage.setItem(TIMER_SK, JSON.stringify({
+    startEpoch: timerStartEpoch,
+    elapsedMs:  timerElapsedMs,
+    running:    timerRunning,
+    sessCtxKey: sessCtx ? `${sessCtx.ph}_${sessCtx.wNum}_${sessCtx.dayIdx}` : null
+  })); }catch(e){}
+}
+
+function clearPersistedTimer(){
+  try{ localStorage.removeItem(TIMER_SK); }catch(e){}
+}
 
 function startTimer(){
   if(timerRunning) return;
-  timerRunning=true;
-  timerStartEpoch=Date.now();
-  // Update display every second — but actual elapsed is always computed from
-  // wall clock so missed ticks (screen off, background) don't matter
-  timerInterval=setInterval(updateTimerDisplay, 1000);
-  const btn=document.getElementById('timer-btn');
-  const disp=document.getElementById('sess-timer');
-  if(btn) btn.textContent='⏸ Pause';
-  if(disp) disp.className='sess-timer running';
+  timerRunning    = true;
+  timerStartEpoch = Date.now();
+  timerInterval   = setInterval(()=>{ updateTimerDisplay(); persistTimer(); }, 1000);
+  const btn  = document.getElementById('timer-btn');
+  const disp = document.getElementById('sess-timer');
+  if(btn)  btn.textContent = '⏸ Pause';
+  if(disp) disp.className  = 'sess-timer running';
   updateTimerDisplay();
+  persistTimer();
 }
 
 function pauseTimer(){
   if(!timerRunning) return;
-  // Bank elapsed time
   timerElapsedMs += Date.now() - timerStartEpoch;
   if(timerInterval){ clearInterval(timerInterval); timerInterval=null; }
-  timerRunning=false;
-  const btn=document.getElementById('timer-btn');
-  const disp=document.getElementById('sess-timer');
-  if(btn) btn.textContent='▶ Resume';
-  if(disp) disp.className='sess-timer paused';
+  timerRunning = false;
+  const btn  = document.getElementById('timer-btn');
+  const disp = document.getElementById('sess-timer');
+  if(btn)  btn.textContent = '▶ Resume';
+  if(disp) disp.className  = 'sess-timer paused';
   updateTimerDisplay();
+  persistTimer();
 }
 
 function toggleTimer(){
@@ -1707,34 +1786,69 @@ function toggleTimer(){
 
 function resetTimer(){
   if(timerInterval){ clearInterval(timerInterval); timerInterval=null; }
-  timerRunning=false;
-  timerStartEpoch=0;
-  timerElapsedMs=0;
+  timerRunning    = false;
+  timerStartEpoch = 0;
+  timerElapsedMs  = 0;
   updateTimerDisplay();
+  clearPersistedTimer();
 }
 
 function getElapsedSeconds(){
-  const banked=timerElapsedMs;
-  const live=timerRunning?(Date.now()-timerStartEpoch):0;
-  return Math.floor((banked+live)/1000);
+  const live = timerRunning ? (Date.now() - timerStartEpoch) : 0;
+  return Math.floor((timerElapsedMs + live) / 1000);
 }
 
-function updateTimerDisplay(){
-  const el=document.getElementById('sess-timer');
-  if(!el) return;
-  const total=getElapsedSeconds();
-  const h=Math.floor(total/3600);
-  const m=Math.floor((total%3600)/60);
-  const s=total%60;
-  el.textContent = h>0
+function formatSeconds(total){
+  const h=Math.floor(total/3600), m=Math.floor((total%3600)/60), s=total%60;
+  return h>0
     ? `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
     : `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 }
 
-// Catch visibilitychange so display refreshes instantly when returning to app
-document.addEventListener('visibilitychange',()=>{
+function updateTimerDisplay(){
+  const el = document.getElementById('sess-timer');
+  if(el) el.textContent = formatSeconds(getElapsedSeconds());
+}
+
+// Refresh display instantly when returning from background
+document.addEventListener('visibilitychange', ()=>{
   if(!document.hidden && timerRunning) updateTimerDisplay();
 });
+
+// On load — check if a session was in progress when the app was killed
+(function resumePersistedSession(){
+  try{
+    const saved = JSON.parse(localStorage.getItem(TIMER_SK)||'null');
+    if(!saved || !saved.sessCtxKey) return;
+    const [ph,wNum,dayIdx] = saved.sessCtxKey.split('_').map(Number);
+    const pData = ALL[ph-1];
+    if(!pData) return;
+    const week = pData.find(w=>w.week===wNum);
+    if(!week) return;
+    const day = week.days[dayIdx];
+    if(!day) return;
+    // Restore timer state
+    timerElapsedMs  = saved.elapsedMs || 0;
+    timerStartEpoch = saved.startEpoch || 0;
+    timerRunning    = false; // will re-start below if was running
+    // Re-open the session overlay with restored context
+    sessCtx = {ph, wNum, dayIdx, day};
+    document.getElementById('sess-day-label').textContent = `${day.day} · Phase ${ph} · Week ${wNum}`;
+    document.getElementById('sess-title').textContent     = day.focus;
+    const gt = GARMIN[day.type]||GARMIN.rest;
+    document.getElementById('sess-garmin-text').textContent = gt[0];
+    renderSessionSteps();
+    document.getElementById('sessionOverlay').classList.add('open');
+    // If timer was running when app was killed, add the offline gap and resume
+    if(saved.running){
+      const offlineGap = Date.now() - saved.startEpoch;
+      timerElapsedMs  += offlineGap; // account for time spent killed
+      startTimer();
+    } else {
+      updateTimerDisplay();
+    }
+  }catch(e){}
+})();
 
 // ─── SESSION MODE ─────────────────────────────────────────────────
 let sessCtx={ph:1,wNum:1,dayIdx:0,day:null};
@@ -2019,6 +2133,10 @@ function saveSetNote(si){
 function finishSession(){
   const {ph,wNum,dayIdx}=sessCtx;
   setDone(wNum,dayIdx,true);
+  clearPersistedTimer();
+  // Rebuild plan weights from newly logged data
+  rebuildAWFromEquipment();
+  renderPhase(1); renderPhase(2); renderPhase(3);
   renderSessionSteps();
   refreshCard(ph,wNum,dayIdx);
   renderPills(ph,ALL[ph-1],curW[ph]);
@@ -2027,6 +2145,7 @@ function finishSession(){
 
 function closeSession(){
   pauseTimer();
+  clearPersistedTimer();
   document.getElementById('sessionOverlay').classList.remove('open');
 }
 
@@ -2430,6 +2549,46 @@ function renderCustomTags(){
   wrap.innerHTML=eqState.custom.map(v=>`<div class="eq-tag">${v}<button class="eq-tag-rm" onclick="removeCustomKit('${v.replace(/'/g,'\\\'')}')" title="Remove">×</button></div>`).join('');
 }
 
+function rebuildAWFromEquipment(){
+  // Sync all AW values that depend on equipment
+  AW.sandbagLunge = eqState.sandbagKg || 20;
+  AW.wallBall     = eqState.wallballKg || 9;
+  AW.sledKg       = eqState.sledKg || 0;
+  const dbs = eqState.dumbbells && eqState.dumbbells.length ? [...eqState.dumbbells].sort((a,b)=>a-b) : [25];
+  AW.farmerCarry  = Math.min(Math.max(...dbs), 25);
+  // Recalculate 1RM-based helpers from logged data if available
+  const hist = buildLiftHistoryQuick();
+  if(hist['Back Squat'])    AW.squat1rm    = Math.max(AW.squat1rm,    hist['Back Squat']);
+  if(hist['Deadlift'])      AW.deadlift1rm = Math.max(AW.deadlift1rm, hist['Deadlift']);
+  if(hist['RDL'])           AW.rdl1rm      = Math.max(AW.rdl1rm,      hist['RDL']);
+  if(hist['Bench Press'])   AW.bench       = Math.max(AW.bench,       hist['Bench Press']);
+  if(hist['Overhead Press'])AW.ohp         = Math.max(AW.ohp,         hist['Overhead Press']);
+  if(hist['Bent-over Row']) AW.bentRow     = Math.max(AW.bentRow,     hist['Bent-over Row']);
+  if(hist['DB Row'])        AW.bentRow     = Math.max(AW.bentRow,     hist['DB Row']);
+}
+
+// Quick version of buildLiftHistory that returns just best weight per lift
+function buildLiftHistoryQuick(){
+  const best={};
+  for(const key of Object.keys(actLog)){
+    const m=key.match(/^w(\d+)_d(\d+)_s(\d+)$/);
+    if(!m) continue;
+    const [,w,d,s]=[...m].map(Number);
+    const logData=actLog[key];
+    if(!logData||!logData.sets||!logData.sets.length) continue;
+    const phase=w<=16?1:w<=36?2:3;
+    const weekData=ALL[phase-1]&&ALL[phase-1].find(wk=>wk.week===w);
+    if(!weekData) continue;
+    const step=weekData.days[d]&&weekData.days[d].steps&&weekData.days[d].steps[s];
+    if(!step) continue;
+    const liftName=liftNameFromLabel(step.label||'');
+    if(!liftName) continue;
+    const maxW=Math.max(...logData.sets.filter(sv=>sv.done&&sv.weight).map(sv=>parseFloat(sv.weight)||0));
+    if(maxW>0) best[liftName]=Math.max(best[liftName]||0, maxW);
+  }
+  return best;
+}
+
 function saveEquipment(){
   // Dumbbell fields
   // dumbbells array saved via addDB/removeDB — eqState.dumbbells already up to date
@@ -2451,16 +2610,13 @@ function saveEquipment(){
 
   saveEquipmentData(eqState);
 
-  // Update athlete weights object to match equipment
-  AW.sandbagLunge = eqState.sandbagKg||20;
-  AW.wallBall = eqState.wallballKg||9;
-  const _mx=eqState.dumbbells&&eqState.dumbbells.length?Math.max(...eqState.dumbbells):25;
-  AW.farmerCarry=Math.min(_mx,25);
+  // Fully rebuild AW from saved equipment before re-rendering sessions
+  rebuildAWFromEquipment();
 
   updateEquipmentStrip();
   updateEquipmentHeaderBtn();
 
-  // Re-render all phases so sessions use new equipment
+  // Re-render all phases so every session step recalculates with new kit
   renderPhase(1); renderPhase(2); renderPhase(3);
 
   closeEquipment();
@@ -2583,6 +2739,148 @@ function buildLiftHistory(){
 
 let dashLiftHistory={};
 let activeLift=null;
+
+// ─── MANUAL SESSION TIME + GARMIN IMPORT ─────────────────────────
+function openManualTime(){
+  const panel=document.getElementById('manual-time-panel');
+  if(panel){ panel.style.display='block'; updateManualWeekOptions(); }
+}
+function closeManualTime(){
+  const panel=document.getElementById('manual-time-panel');
+  if(panel) panel.style.display='none';
+}
+
+function updateManualWeekOptions(){
+  const ph=parseInt(document.getElementById('mt-phase').value)||1;
+  const ranges={1:[1,16],2:[17,36],3:[37,48]};
+  const [s,e]=ranges[ph]||[1,16];
+  const sel=document.getElementById('mt-week');
+  if(!sel) return;
+  sel.innerHTML='';
+  for(let w=s;w<=e;w++) sel.innerHTML+=`<option value="${w}">Week ${w}</option>`;
+}
+
+function saveManualTime(){
+  const ph  = parseInt(document.getElementById('mt-phase').value)||1;
+  const wNum= parseInt(document.getElementById('mt-week').value)||1;
+  const di  = parseInt(document.getElementById('mt-day').value)||0;
+  const timeStr = (document.getElementById('mt-time').value||'').trim();
+  const hr   = document.getElementById('mt-hr').value;
+  const pace = document.getElementById('mt-pace').value;
+  const dist = document.getElementById('mt-dist').value;
+  const note = document.getElementById('mt-note').value;
+
+  if(!timeStr){ alert('Please enter a session duration.'); return; }
+
+  // Parse mm:ss or hh:mm:ss into seconds
+  const parts=timeStr.split(':').map(Number);
+  let totalSecs=0;
+  if(parts.length===2) totalSecs=parts[0]*60+parts[1];
+  else if(parts.length===3) totalSecs=parts[0]*3600+parts[1]*60+parts[2];
+
+  // Store as a session-level log on step 0 (general session log)
+  const existing = getLog(wNum,di,0)||{};
+  const updated = {...existing,
+    sessionTime: totalSecs,
+    sessionTimeStr: timeStr,
+    run: { pace: pace||existing.run?.pace, hr: hr||existing.run?.hr, dist: dist||existing.run?.dist },
+    note: note||existing.note,
+    manualEntry: true
+  };
+  setLog(wNum,di,0,updated);
+
+  // Mark day as done
+  setDone(wNum,di,true);
+  renderPhase(ph);
+  renderPills(ph,ALL[ph-1],curW[ph]);
+  updateProgress();
+  closeManualTime();
+
+  // Flash confirm
+  const btn=document.querySelector('#manual-time-panel .dash-log-btn');
+  if(btn){ const orig=btn.textContent; btn.textContent='✓ Saved!'; setTimeout(()=>btn.textContent=orig,1800); }
+}
+
+function importGarminCSV(event){
+  const file=event.target.files&&event.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const text=e.target.result;
+      const lines=text.split('\n').filter(l=>l.trim());
+      if(!lines.length){ showGarminResult('No data found in file.','error'); return; }
+
+      // Garmin Connect CSV columns vary — detect header
+      const header=lines[0].split(',').map(s=>s.replace(/"/g,'').trim().toLowerCase());
+      const col=n=>header.indexOf(n);
+
+      const results=[];
+      for(let i=1;i<lines.length;i++){
+        const row=lines[i].split(',').map(s=>s.replace(/"/g,'').trim());
+        if(row.length<3) continue;
+
+        const dateStr  = row[col('date')]||row[0]||'';
+        const title    = (row[col('title')]||row[col('activity type')]||row[1]||'').toLowerCase();
+        const duration = row[col('time')]||row[col('duration')]||row[2]||'';
+        const dist     = row[col('distance')]||row[col('distance (km)')]||'';
+        const avgHR    = row[col('avg hr')]||row[col('average heart rate (bpm)')]||'';
+        const avgPace  = row[col('avg pace')]||row[col('average pace')]||'';
+        const calories = row[col('calories')]||'';
+
+        if(!dateStr||!duration) continue;
+
+        results.push({ dateStr, title, duration, dist, avgHR, avgPace, calories });
+      }
+
+      if(!results.length){ showGarminResult('Could not parse any activities. Make sure you exported Activities CSV from Garmin Connect.','error'); return; }
+
+      // Store all imported activities in a dedicated key
+      const GARMIN_SK='hyrox_garmin_v1';
+      let existing=[];
+      try{ existing=JSON.parse(localStorage.getItem(GARMIN_SK)||'[]'); }catch(e){}
+      const merged=[...existing];
+      let added=0;
+      results.forEach(r=>{
+        if(!merged.find(m=>m.dateStr===r.dateStr&&m.duration===r.duration)){
+          merged.push({...r, imported: new Date().toISOString()});
+          added++;
+        }
+      });
+      localStorage.setItem(GARMIN_SK, JSON.stringify(merged));
+
+      // Update body stats from run data — 5K pace if any 5K activities found
+      const runs=results.filter(r=>r.title.includes('run')||r.title.includes('running'));
+      runs.forEach(r=>{
+        const d=parseFloat(r.dist)||0;
+        if(d>=4.8&&d<=5.2&&r.avgPace){
+          // Roughly a 5K — log it as a body stat
+          const entry={ date:r.dateStr, fiveK:r.avgPace, note:`Garmin import — ${r.title}` };
+          bodyStats.push(entry);
+        }
+      });
+      if(runs.length) saveBodyStats(bodyStats);
+
+      showGarminResult(`✓ Imported ${added} new activities (${results.length} total in file). ${runs.length} run sessions detected. Your dashboard has been updated.`,'success');
+      renderBodyStats();
+
+    }catch(err){
+      showGarminResult('Error reading file: '+err.message,'error');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value=''; // reset so same file can be re-imported
+}
+
+function showGarminResult(msg, type){
+  const el=document.getElementById('garmin-result');
+  if(!el) return;
+  el.style.display='block';
+  el.style.color=type==='error'?'var(--danger)':'var(--info)';
+  el.style.borderColor=type==='error'?'rgba(240,78,78,.2)':'rgba(78,179,245,.2)';
+  el.textContent=msg;
+  setTimeout(()=>{ if(el) el.style.display='none'; },6000);
+}
 
 function openDash(){
   dashLiftHistory=buildLiftHistory();
@@ -2764,6 +3062,9 @@ function setPhase(p){
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────
+// On startup — update AW from any previously logged session data
+// This means the plan weights adapt upward as you get stronger
+rebuildAWFromEquipment();
 renderPhase(1);renderPhase(2);renderPhase(3);updateProgress();
 updateEquipmentStrip();
 updateEquipmentHeaderBtn();
