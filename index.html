@@ -736,7 +736,13 @@ footer { text-align:center; padding:2rem 1rem; color:var(--faint); font-size:.68
           📥 Import Garmin CSV
           <input type="file" accept=".csv,.fit" style="display:none;" onchange="importGarminCSV(event)">
         </label>
+        <button class="lift-tab" onclick="exportBackup()" style="background:var(--elevated);border-color:var(--success);color:var(--success);">💾 Backup Data</button>
+        <label class="lift-tab" style="background:var(--elevated);border-color:var(--success);color:var(--success);cursor:pointer;">
+          📂 Restore Backup
+          <input type="file" accept=".json" style="display:none;" onchange="importBackup(event)">
+        </label>
       </div>
+      <div id="backup-notice" style="display:none;background:var(--success-dim);border:1px solid rgba(45,212,160,.2);border-radius:10px;padding:.75rem;margin-bottom:1rem;font-size:.78rem;color:var(--success);"></div>
 
       <!-- Manual time entry panel -->
       <div id="manual-time-panel" style="display:none;background:var(--elevated);border:1px solid var(--line2);border-radius:10px;padding:1rem;margin-bottom:1rem;">
@@ -2871,6 +2877,94 @@ function importGarminCSV(event){
   reader.readAsText(file);
   event.target.value=''; // reset so same file can be re-imported
 }
+
+// ─── BACKUP / RESTORE ────────────────────────────────────────────
+const ALL_KEYS = [
+  'hyrox_v4',         // day completion
+  'hyrox_steps_v4',   // step completion
+  'hyrox_logs_v1',    // set/run logs
+  'hyrox_equipment_v1',
+  'hyrox_bodystats_v1',
+  'hyrox_curW_v1',
+  'hyrox_garmin_v1',
+];
+
+function exportBackup(){
+  const backup = { version: 3, exported: new Date().toISOString(), data: {} };
+  ALL_KEYS.forEach(k => {
+    try { backup.data[k] = JSON.parse(localStorage.getItem(k)||'null'); } catch(e){}
+  });
+  const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `hyrox-backup-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showBackupNotice('✓ Backup downloaded. Save it to Google Drive or your Files app so you can restore it anytime.');
+}
+
+function importBackup(event){
+  const file = event.target.files && event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const backup = JSON.parse(e.target.result);
+      if(!backup.data) throw new Error('Invalid backup file');
+      let restored = 0;
+      Object.entries(backup.data).forEach(([k,v]) => {
+        if(v !== null){
+          localStorage.setItem(k, JSON.stringify(v));
+          restored++;
+        }
+      });
+      // Reload all in-memory state from restored localStorage
+      done       = loadDone();
+      stepsDone  = loadSteps();
+      actLog     = loadLogs();
+      eqState    = loadEquipment() || {...EQ_DEFAULTS};
+      bodyStats  = loadBodyStats();
+      curW       = loadCurW() || {1:1,2:17,3:37};
+      rebuildAWFromEquipment();
+      renderPhase(1); renderPhase(2); renderPhase(3);
+      updateProgress();
+      updateEquipmentStrip();
+      updateEquipmentHeaderBtn();
+      openDash();
+      showBackupNotice(`✓ Restored ${restored} data stores from backup dated ${backup.exported?.split('T')[0]||'unknown'}. Your progress is back.`);
+    } catch(err){
+      showBackupNotice('✗ Could not read backup file: ' + err.message, true);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function showBackupNotice(msg, isError){
+  const el = document.getElementById('backup-notice');
+  if(!el) return;
+  el.style.display = 'block';
+  el.style.color = isError ? 'var(--danger)' : 'var(--success)';
+  el.style.borderColor = isError ? 'rgba(240,78,78,.2)' : 'rgba(45,212,160,.2)';
+  el.style.background = isError ? 'rgba(240,78,78,.05)' : 'var(--success-dim)';
+  el.textContent = msg;
+  setTimeout(() => { el.style.display='none'; }, 7000);
+}
+
+// ─── STORAGE PERSISTENCE ─────────────────────────────────────────
+// Request persistent storage so the browser won't clear it when
+// disk is low or the user clears general browsing data
+async function requestPersistentStorage(){
+  try{
+    if(navigator.storage && navigator.storage.persist){
+      const granted = await navigator.storage.persist();
+      console.log('Persistent storage:', granted ? 'granted ✓' : 'not granted');
+    }
+  } catch(e){}
+}
+// Call on startup — browser only prompts once, then remembers
+requestPersistentStorage();
 
 function showGarminResult(msg, type){
   const el=document.getElementById('garmin-result');
