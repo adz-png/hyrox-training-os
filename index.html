@@ -729,6 +729,10 @@ footer { text-align:center; padding:2rem 1rem; color:var(--faint); font-size:.68
     </div>
     <div class="dash-body">
       <div class="dash-intro">Your logged sets are tracked automatically. Select a lift to see your weight progression over time. Log body stats below to track weight, body fat, and resting heart rate. Import a Garmin Connect CSV to log run sessions automatically.</div>
+      <div id="adapt-notes-wrap" style="display:none;background:rgba(245,166,35,.07);border:1px solid rgba(245,166,35,.2);border-radius:10px;padding:.8rem;margin-bottom:.9rem;">
+        <div style="font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent2);font-weight:600;margin-bottom:.5rem;">⚡ Plan Auto-Adjustments</div>
+        <div id="adapt-notes-list" style="font-size:.78rem;color:#d0d0dc;line-height:1.65;"></div>
+      </div>
 
       <div style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap;">
         <button class="lift-tab" onclick="openManualTime()" style="background:var(--elevated);border-color:var(--accent2);color:var(--accent2);">⏱ Log Session Time</button>
@@ -1223,15 +1227,14 @@ function stepsP1Mon(w){
   const thrustLoad=nearestBarbellLoad(Math.round(AW.squat1rm*(0.45+(w-1)*0.01)/2.5)*2.5);
   const calfLoad=nearestBarbellLoad(Math.round(60+(w-1)*2.5));
   return [
-    warmup(10),
+    warmup(8),
     {label:`Back Squat — ${sets}×${reps}`,meta:`Focus: controlled descent (3 sec down), drive through heels. 3 min rest between sets. ${plateBreakdown(wSq)}`,weight:`${wSq}kg`},
     {label:`Romanian Deadlift — 4×10`,meta:`Hinge at hips, soft knee, bar tracks close to shins. Slow 3-sec eccentric — feel the stretch. ${plateBreakdown(wRdl)}`,weight:`${wRdl}kg`},
     {label:`Leg Press — 3×12 (or Hack Squat)`,meta:'If no leg press, use barbell squat at lighter load with wider stance. Feet high on platform = more hamstring/glute.',weight:`${wLeg}kg`},
     {label:`Sandbag Forward Lunge — ${2+Math.floor(w/4)}×${10+Math.floor(w/4)} each leg`,meta:'Bear hug sandbag to chest. Long stride, knee tracks over toe. Rest 90 sec between sets.',weight:`${lungeLoad}kg sandbag`},
     {label:'Barbell Hip Thrust — 4×12',meta:`Barbell across hips, shoulder blades on bench. Drive through heels, squeeze glutes hard at top. This builds Hyrox sled push power. ${plateBreakdown(thrustLoad)}`,weight:`${thrustLoad}kg`},
-    {label:'Nordic Curl — 3×5',meta:'Kneel with feet anchored under squat rack. Lower as slowly as possible — 4 sec minimum. Use hands to push back up. Brutal hamstring eccentric that prevents injury.'},
+    {label:'Lying DB Hamstring Curl — 4×12',meta:'Lie face down, hold a dumbbell between your feet. Curl heels toward glutes, lower slowly (3 sec). Full range. Excellent hamstring isolation with no special equipment.',weight:`${nearestDB(10+Math.floor(w/3))}kg DB`},
     {label:`Seated Calf Raise or Standing Calf Raise — 4×20`,meta:'Full range: heel drops below level at bottom, rise high on toes at top. Hold 1 sec. Protects achilles under run volume.',weight:`${calfLoad}kg barbell or heavy DBs`},
-    {label:'Dead Bug — 3×10 each side',meta:'Lower back pressed to floor. Extend opposite arm/leg slowly without arching back. Core stability for squatting and carrying.'},
     cooldown()
   ];
 }
@@ -1337,9 +1340,9 @@ function stepsP2Mon(w){
     {label:`Deadlift — 4×4`,meta:`Heavy. Brace hard before each pull. Reset on the floor between reps — no touch-and-go. ${plateBreakdown(wDl)}`,weight:`${wDl}kg`},
     {label:`Romanian Deadlift — 3×10`,meta:`Immediately after conventional DL while the pattern is warm. Lighter, slower, feel the hamstring load. ${plateBreakdown(wRdl)}`,weight:`${wRdl}kg`},
     {label:`Sandbag Forward Lunge — continuous 60m`,meta:'Bear hug. Non-stop 60m — this is the Hyrox lunge station distance. Log time each week.',weight:`${Math.min(AW.sandbagLunge+Math.floor(lw/4),25)}kg`},
-    {label:'Barbell Hip Thrust — 4×10',meta:`Barbell across hips, shoulder blades on bench. Full hip extension and glute squeeze at top. Drives sled push power. ${plateBreakdown(thrustLoad)}`,weight:`${thrustLoad}kg`},
+    {label:'Barbell Hip Thrust — 3×10',meta:`Barbell across hips, shoulder blades on bench. Full hip extension and glute squeeze at top. Drives sled push power. ${plateBreakdown(thrustLoad)}`,weight:`${thrustLoad}kg`},
     {label:'Bulgarian Split Squat — 3×10 each',meta:'Rear foot elevated on bench. Front foot forward enough for vertical shin. Deep lunge — this will hurt.',weight:`${nearestDB(Math.min(AW.lunge+Math.floor(lw/2),eqState.dumbbells&&eqState.dumbbells.length?Math.max(...eqState.dumbbells):25))}kg DBs`},
-    {label:'Nordic Curl — 3×6',meta:'Feet anchored. Lower as slowly as possible — target 5 sec descent. Push up with hands. Essential hamstring injury prevention.'},
+    {label:'Lying DB Hamstring Curl — 4×10',meta:'Lie face down, dumbbell between feet. Curl heels toward glutes, 3-sec eccentric. Heavier each week. Key hamstring builder for run speed and injury prevention.',weight:`${nearestDB(Math.min(12+Math.floor(lw/2),25))}kg DB`},
     {label:`Calf Raise — 4×20`,meta:'Full range, 1 sec hold at top. Heavy loading. Protects achilles under high run mileage.',weight:`${calfLoad}kg`},
     cooldown()
   ];
@@ -1419,8 +1422,8 @@ function stepsP3Mon(w){
     {label:`Romanian Deadlift — 3×8 (tempo)`,meta:`After the heavy pulls, slow down. 3-sec eccentric, feel the stretch. ${plateBreakdown(wRdl)}`,weight:`${wRdl}kg`},
     {label:'Sandbag Lunge — 100m continuous',meta:'Full race-distance lunge. No stopping. Log time and aim to beat it each week.',weight:`${Math.min(AW.sandbagLunge+Math.floor(lw/2),25)}kg`},
     {label:'Barbell Hip Thrust — 4×8 (heavy)',meta:`Drive hips to full extension, 1 sec squeeze at top. This is a max glute strength exercise — load it. ${plateBreakdown(thrustLoad)}`,weight:`${thrustLoad}kg`},
-    {label:'Bulgarian Split Squat — 4×8 each',meta:'Rear foot elevated. Deep lunge — thigh parallel or below. This is where single-leg power is built.',weight:`${nearestDB(Math.min(AW.lunge+lw,maxDB))}kg DBs`},
-    {label:'Leg Curl (Nordic) — 4×6',meta:'Feet anchored, 5-sec descent minimum. Most athletes cannot do these strictly — that is fine. Assist up with hands and focus entirely on the eccentric.'},
+    {label:'Bulgarian Split Squat — 3×8 each',meta:'Rear foot elevated. Deep lunge — thigh parallel or below. This is where single-leg power is built.',weight:`${nearestDB(Math.min(AW.lunge+lw,maxDB))}kg DBs`},
+    {label:'Lying DB Hamstring Curl — 4×8 (heavy)',meta:'Lie face down, heavy dumbbell between feet. Slow 4-sec eccentric, explosive concentric. Load this progressively — these should be genuinely hard by set 3.',weight:`${nearestDB(Math.min(15+Math.floor(lw/2),25))}kg DB`},
     {label:`Calf Raise — 5×20 (heavy)`,meta:'Standing or seated with barbell on back. Full range, 2-sec hold at top. High volume protects the achilles under 50km+ run weeks.',weight:`${calfLoad}kg`},
     {label:'Copenhagen Hip Adduction — 3×10 each',meta:'Side plank with top foot on bench, bottom leg lifted. Groin and adductor strength — prevents the groin strain that sidelines distance runners. Often neglected.'},
     cooldown()
@@ -1511,7 +1514,7 @@ function stepsDeload(dayIdx, ph){
 function buildDays1(w){
   const isD=w%4===0;
   const dayCfg=[
-    {day:'Mon',type:'strength',label:'Strength',focus:'Lower Body Power',mins:65},
+    {day:'Mon',type:'strength',label:'Strength',focus:'Lower Body Power',mins:60},
     {day:'Tue',type:'run',label:'Run',focus:'Zone 2 Easy Run',mins:Math.min(35+w*2,65)},
     {day:'Wed',type:'hybrid',label:'Hybrid',focus:'Hyrox Station Intro',mins:50},
     {day:'Thu',type:'strength',label:'Strength',focus:'Upper Body + Core',mins:50},
@@ -1528,7 +1531,7 @@ function buildDays1(w){
 function buildDays2(w){
   const lw=w-16; const isD=lw%4===0;
   const dayCfg=[
-    {day:'Mon',type:'strength',label:'Strength',focus:'Heavy Lower — Race Loads',mins:75},
+    {day:'Mon',type:'strength',label:'Strength',focus:'Heavy Lower — Race Loads',mins:65},
     {day:'Tue',type:'run',label:'Run',focus:'Race-Pace Intervals',mins:55},
     {day:'Wed',type:'hyrox',label:'Hyrox',focus:'Mini Race Simulation',mins:70},
     {day:'Thu',type:'strength',label:'Strength',focus:'Upper + Posterior Chain',mins:60},
@@ -1545,7 +1548,7 @@ function buildDays2(w){
 function buildDays3(w){
   const lw=w-36; const isD=lw%3===0;
   const dayCfg=[
-    {day:'Mon',type:'strength',label:'Strength',focus:'Max Strength — Competition Loads',mins:85},
+    {day:'Mon',type:'strength',label:'Strength',focus:'Max Strength — Competition Loads',mins:75},
     {day:'Tue',type:'run',label:'Run',focus:'VO2max Intervals',mins:65},
     {day:'Wed',type:'hyrox',label:'Hyrox',focus:'Full Race Simulation',mins:90},
     {day:'Thu',type:'run',label:'Run',focus:`Long Run ${Math.min(20+Math.floor((w-36)*0.5),25)}km`,mins:Math.min(120+(w-36)*4,155)},
@@ -1976,37 +1979,62 @@ function renderSessionSteps(){
       return;
     }
 
-    // ── For run / note steps: existing expand panel ──
-    let logPanelHtml='';
+    // ── For run steps: inline fields always visible (like set logger) ──
     if(logType==='run'){
       const sv=saved&&saved.run||{};
-      logPanelHtml=`<div class="slp-title">Log Actual Performance</div>
-        <div class="slp-row">
-          <div class="slp-field">
-            <div class="slp-label">Avg Pace /km</div>
-            <input class="slp-input" type="text" inputmode="text" placeholder="e.g. 5:30" value="${sv.pace||''}" id="log-pace-${si}">
+      const noteVal=saved&&saved.note||'';
+      const noteOpen=!!noteVal;
+      h+=`<div class="step-item${sd?' step-done':''}${isActive&&!sd?' step-active':''}" id="step-${si}">
+        <div class="step-hdr" style="cursor:default;">
+          <div class="step-num">${sd?'✓':si+1}</div>
+          <div class="step-text-wrap">
+            <div class="step-label">${step.label}</div>
+            ${step.weight?`<div class="step-meta"><span class="step-weight">⚖ ${step.weight}</span></div>`:''}
+            ${step.meta?`<div class="step-meta">${step.meta}</div>`:''}
           </div>
-          <div class="slp-field">
-            <div class="slp-label">Avg HR bpm</div>
-            <input class="slp-input" type="number" inputmode="numeric" placeholder="142" value="${sv.hr||''}" id="log-hr-${si}">
+          <button class="step-tick" onclick="event.stopPropagation();toggleStep(${si})">${sd?'✓':'○'}</button>
+        </div>
+        <div class="set-log-wrap">
+          <div class="set-log-header">
+            <div class="set-log-title">Log Run Data</div>
+            <button class="set-log-note-btn" onclick="toggleSetNote(${si})">+ note</button>
           </div>
-          <div class="slp-field">
-            <div class="slp-label">Distance km</div>
-            <input class="slp-input" type="number" inputmode="decimal" step="0.1" placeholder="5.0" value="${sv.dist||''}" id="log-dist-${si}">
+          <div class="inline-set-row">
+            <div class="isr-unit" style="min-width:52px">Pace</div>
+            <input class="isr-input" style="width:80px" type="text" inputmode="text"
+              placeholder="5:30" value="${sv.pace||''}"
+              id="isr-pace-${si}" onchange="saveRunInline(${si})">
+            <div class="isr-unit">/km</div>
+            <div class="isr-unit" style="min-width:28px;margin-left:.5rem">HR</div>
+            <input class="isr-input reps" type="number" inputmode="numeric"
+              placeholder="148" value="${sv.hr||''}"
+              id="isr-hr-${si}" onchange="saveRunInline(${si})">
+            <div class="isr-unit">bpm</div>
+          </div>
+          <div class="inline-set-row">
+            <div class="isr-unit" style="min-width:52px">Dist</div>
+            <input class="isr-input kg" type="number" inputmode="decimal" step="0.1"
+              placeholder="8.0" value="${sv.dist||''}"
+              id="isr-dist-${si}" onchange="saveRunInline(${si})">
+            <div class="isr-unit">km</div>
+            <button class="isr-tick${sd?' set-done':''}" style="margin-left:auto"
+              onclick="saveRunAndTick(${si})">${sd?'✓':'Log ✓'}</button>
+          </div>
+          <div class="set-note-wrap${noteOpen?' open':''}" id="set-note-${si}">
+            <input class="set-note-input" type="text" placeholder="How did it feel? HR zones, effort level…"
+              value="${noteVal}" id="set-note-val-${si}" onchange="saveSetNote(${si})">
           </div>
         </div>
-        <div class="slp-note-wrap slp-field">
-          <div class="slp-label">Note (optional)</div>
-          <input class="slp-input" type="text" placeholder="e.g. HR crept up in km 4…" value="${saved&&saved.note||''}" id="log-note-${si}">
-        </div>
-        <button class="slp-save-btn" onclick="saveStepLog(${si},'run',0)">Save Log</button>`;
-    } else {
-      logPanelHtml=`<div class="slp-title">Add a Note</div>
-        <div class="slp-field">
-          <input class="slp-input" type="text" placeholder="How did it feel? Any issues?" value="${saved&&saved.note||''}" id="log-note-${si}" style="width:100%;">
-        </div>
-        <button class="slp-save-btn" onclick="saveStepLog(${si},'note',0)">Save Note</button>`;
+      </div>`;
+      return;
     }
+
+    // ── For note steps: simple expand panel ──
+    const logPanelHtml=`<div class="slp-title">Add a Note</div>
+      <div class="slp-field">
+        <input class="slp-input" type="text" placeholder="How did it feel? Any issues?" value="${saved&&saved.note||''}" id="log-note-${si}" style="width:100%;">
+      </div>
+      <button class="slp-save-btn" onclick="saveStepLog(${si},'note',0)">Save Note</button>`;
 
     h+=`<div class="step-item${sd?' step-done':''}${isActive?' step-active':''}" id="step-${si}">
       <div class="step-hdr" onclick="toggleLogPanel(${si})">
@@ -2090,6 +2118,25 @@ function toggleStep(si){
 }
 
 // ── INLINE SET LOGGING ────────────────────────────────────────────
+function saveRunInline(si){
+  const {wNum,dayIdx}=sessCtx;
+  const pace=(document.getElementById(`isr-pace-${si}`)||{}).value||'';
+  const hr=(document.getElementById(`isr-hr-${si}`)||{}).value||'';
+  const dist=(document.getElementById(`isr-dist-${si}`)||{}).value||'';
+  let saved=getLog(wNum,dayIdx,si)||{};
+  saved.run={pace,hr,dist};
+  setLog(wNum,dayIdx,si,saved);
+  // Analyse run and potentially recalibrate plan
+  analyseRunPerformance(wNum,dayIdx,si,{pace,hr,dist});
+}
+
+function saveRunAndTick(si){
+  saveRunInline(si);
+  const {wNum,dayIdx}=sessCtx;
+  if(!isStepDone(wNum,dayIdx,si)) setStepDone(wNum,dayIdx,si,true);
+  renderSessionSteps();
+}
+
 function saveSetInline(si,s){
   const {wNum,dayIdx}=sessCtx;
   const wEl=document.getElementById(`isr-w-${si}-${s}`);
@@ -2119,6 +2166,8 @@ function tickSet(si,s,totalSets){
   const allSetsDone=saved.sets.length===totalSets&&saved.sets.every(sv=>sv.done);
   if(allSetsDone&&!isStepDone(wNum,dayIdx,si)) setStepDone(wNum,dayIdx,si,true);
   else if(!allSetsDone&&isStepDone(wNum,dayIdx,si)) setStepDone(wNum,dayIdx,si,false);
+  // Analyse performance vs plan targets for adaptation
+  if(allSetsDone) analyseStrengthPerformance(si);
   renderSessionSteps();
 }
 
@@ -2321,8 +2370,7 @@ function drawCard(ph,wNum,day,week){
     return !l.includes('warm-up')&&!l.includes('cool-down');
   });
 
-  // Two-line layout per item: exercise name (28px) + weight (20px)
-  // Fixed item height of 72px gives clear separation and readable size
+  // Two-line layout: name (28px) + actual logged performance (20px accent)
   const ITEM_H=72;
   const NAME_SIZE=28;
   const WEIGHT_SIZE=20;
@@ -2332,9 +2380,46 @@ function drawCard(ph,wNum,day,week){
 
   showSteps.forEach((s,i)=>{
     const iy=listTop+18+i*ITEM_H;
-    const nameY=iy+30;   // baseline for exercise name
-    const weightY=iy+56; // baseline for weight line
-    const done=stravaSnap&&isStepDone(stravaSnap.wNum,stravaSnap.di,steps.indexOf(s));
+    const nameY=iy+30;
+    const weightY=iy+56;
+    const stepIdx=steps.indexOf(s);
+    const done=stravaSnap&&isStepDone(stravaSnap.wNum,stravaSnap.di,stepIdx);
+
+    // Pull actual logged data for this step
+    const logged = stravaSnap ? getLog(stravaSnap.wNum, stravaSnap.di, stepIdx) : null;
+
+    // Build the "actual performance" line from logged data
+    let actualLine = '';
+    if(logged){
+      if(logged.sets && logged.sets.length){
+        // Strength — show best set and summarise all sets
+        const doneSets = logged.sets.filter(sv=>sv.done && sv.weight);
+        if(doneSets.length){
+          const best = doneSets.reduce((b,sv)=>parseFloat(sv.weight)>parseFloat(b.weight)?sv:b, doneSets[0]);
+          const allSame = doneSets.every(sv=>sv.weight===best.weight && sv.reps===best.reps);
+          if(allSame){
+            actualLine = `${doneSets.length}×${best.reps} reps @ ${best.weight}kg`;
+          } else {
+            // Show each set compactly: 85kg×5 · 87.5kg×4 · 90kg×3
+            actualLine = doneSets.map(sv=>`${sv.weight}kg×${sv.reps}`).join(' · ');
+          }
+          if(actualLine.length>42) actualLine=actualLine.substring(0,40)+'…';
+        }
+      } else if(logged.run){
+        // Run — show pace, HR, distance
+        const parts=[];
+        if(logged.run.pace) parts.push(logged.run.pace+'/km');
+        if(logged.run.hr)   parts.push('HR '+logged.run.hr);
+        if(logged.run.dist) parts.push(logged.run.dist+'km');
+        actualLine = parts.join('  ·  ');
+      } else if(logged.sessionTimeStr){
+        actualLine = logged.sessionTimeStr;
+      } else if(logged.note){
+        actualLine = logged.note.substring(0,42);
+      }
+    }
+    // Fall back to planned weight if nothing logged
+    if(!actualLine && s.weight) actualLine = s.weight + ' (planned)';
 
     // alternating row bg
     if(i%2===0){
@@ -2342,7 +2427,7 @@ function drawCard(ph,wNum,day,week){
       rRectCtx(ctx,PAD-10,iy+2,W-PAD*2+20,ITEM_H-4,5); ctx.fill();
     }
 
-    // bullet / tick — sits on name baseline
+    // bullet / tick
     if(done){
       ctx.fillStyle=ac; ctx.font='700 15px sans-serif';
       ctx.fillText('✓',PAD,nameY);
@@ -2351,7 +2436,7 @@ function drawCard(ph,wNum,day,week){
       ctx.beginPath(); ctx.arc(PAD+5,nameY-7,3.5,0,Math.PI*2); ctx.fill();
     }
 
-    // Exercise name — large, full width (no truncation for badge)
+    // Exercise name
     ctx.font=(done?'400':'600')+' '+NAME_SIZE+'px sans-serif';
     ctx.fillStyle=done?hexAlpha('#ffffff',0.3):'#ffffff';
     let label=s.label;
@@ -2359,13 +2444,15 @@ function drawCard(ph,wNum,day,week){
     while(label.length>3&&ctx.measureText(label).width>maxLW) label=label.slice(0,-2)+'…';
     ctx.fillText(label,PAD+24,nameY);
 
-    // Weight — smaller, accent colour, indented to align with name
-    if(s.weight){
+    // Actual logged performance line — accent colour if logged, muted if planned fallback
+    if(actualLine){
+      const isActual = logged && (logged.sets||logged.run||logged.sessionTimeStr||logged.note);
       ctx.font='500 '+WEIGHT_SIZE+'px sans-serif';
-      ctx.fillStyle=done?hexAlpha(ac,0.4):ac;
-      ctx.fillText(s.weight,PAD+24,weightY);
+      ctx.fillStyle = isActual
+        ? (done ? hexAlpha(ac,0.55) : ac)          // actual logged — full accent
+        : hexAlpha('#ffffff',0.22);                 // planned fallback — muted
+      ctx.fillText(actualLine,PAD+24,weightY);
     } else {
-      // No weight — draw a faint separator line instead
       ctx.strokeStyle=hexAlpha('#ffffff',0.05); ctx.lineWidth=1;
       ctx.beginPath(); ctx.moveTo(PAD,weightY-4); ctx.lineTo(W-PAD,weightY-4); ctx.stroke();
     }
@@ -2553,6 +2640,122 @@ function renderCustomTags(){
   const wrap=document.getElementById('eq-custom-tags');
   if(!wrap) return;
   wrap.innerHTML=eqState.custom.map(v=>`<div class="eq-tag">${v}<button class="eq-tag-rm" onclick="removeCustomKit('${v.replace(/'/g,'\\\'')}')" title="Remove">×</button></div>`).join('');
+}
+
+// ─── PLAN ADAPTATION ENGINE ──────────────────────────────────────
+// Analyses logged performance vs plan targets across last N sessions.
+// If consistently below target → scales back to actual capability.
+// If hitting or exceeding → keeps planned progression.
+// Sub-60 goal is always maintained — just the route there adjusts.
+
+const ADAPT_SK = 'hyrox_adapt_v1';
+function loadAdaptState(){ try{ return JSON.parse(localStorage.getItem(ADAPT_SK)||'{}'); }catch(e){ return {}; } }
+function saveAdaptState(s){ try{ localStorage.setItem(ADAPT_SK,JSON.stringify(s)); }catch(e){} }
+let adaptState = loadAdaptState();
+// adaptState structure: { squat1rm_adj, deadlift1rm_adj, pace_adj, ... }
+
+function paceToSeconds(paceStr){
+  if(!paceStr) return null;
+  const parts=paceStr.split(':').map(Number);
+  if(parts.length===2) return parts[0]*60+parts[1];
+  return null;
+}
+
+function analyseRunPerformance(wNum, dayIdx, stepIdx, runData){
+  if(!runData.pace) return;
+  const loggedSecs = paceToSeconds(runData.pace);
+  if(!loggedSecs) return;
+
+  // Get target pace for this step from plan
+  const phase = wNum<=16?1:wNum<=36?2:3;
+  const weekData = ALL[phase-1]&&ALL[phase-1].find(w=>w.week===wNum);
+  if(!weekData) return;
+  const step = weekData.days[dayIdx]&&weekData.days[dayIdx].steps&&weekData.days[dayIdx].steps[stepIdx];
+  if(!step||!step.weight) return;
+  const targetMatch = step.weight.match(/(\d+):(\d+)/);
+  if(!targetMatch) return;
+  const targetSecs = parseInt(targetMatch[1])*60+parseInt(targetMatch[2]);
+
+  // Track how far off target we are (positive = slower than target)
+  const diffPct = ((loggedSecs - targetSecs) / targetSecs) * 100;
+
+  if(!adaptState.paceHistory) adaptState.paceHistory=[];
+  adaptState.paceHistory.push({ wNum, dayIdx, diffPct, date: Date.now() });
+  // Keep last 9 run sessions
+  if(adaptState.paceHistory.length>9) adaptState.paceHistory.shift();
+
+  // Check last 3 sessions — if avg >8% slower, adjust pace targets
+  const recent = adaptState.paceHistory.slice(-3);
+  if(recent.length>=3){
+    const avgDiff = recent.reduce((s,r)=>s+r.diffPct,0)/recent.length;
+    if(avgDiff > 8){
+      // Consistently below target — scale back pace adj
+      adaptState.paceAdj = (adaptState.paceAdj||0) + Math.round(avgDiff * 0.5);
+      adaptState.paceAdjNote = `Pace targets eased by ${adaptState.paceAdj}s/km based on your recent sessions. Sub-60 goal maintained — progression rate extended.`;
+    } else if(avgDiff < -3){
+      // Ahead of targets — tighten progression
+      adaptState.paceAdj = Math.max(0,(adaptState.paceAdj||0) - 5);
+      adaptState.paceAdjNote = null;
+    }
+  }
+  saveAdaptState(adaptState);
+}
+
+function analyseStrengthPerformance(si){
+  const {wNum,dayIdx}=sessCtx;
+  const logged=getLog(wNum,dayIdx,si);
+  if(!logged||!logged.sets||!logged.sets.length) return;
+  const doneSets=logged.sets.filter(sv=>sv.done&&sv.weight&&sv.reps);
+  if(!doneSets.length) return;
+
+  const phase=wNum<=16?1:wNum<=36?2:3;
+  const weekData=ALL[phase-1]&&ALL[phase-1].find(w=>w.week===wNum);
+  if(!weekData) return;
+  const step=weekData.days[dayIdx]&&weekData.days[dayIdx].steps&&weekData.days[dayIdx].steps[si];
+  if(!step||!step.weight) return;
+
+  const liftName = liftNameFromLabel(step.label||'');
+  if(!liftName) return;
+
+  const targetKg = parseFloat(step.weight)||0;
+  const actualAvg = doneSets.reduce((s,sv)=>s+parseFloat(sv.weight),0)/doneSets.length;
+  const diffPct = ((actualAvg-targetKg)/targetKg)*100;
+
+  if(!adaptState.strengthHistory) adaptState.strengthHistory={};
+  if(!adaptState.strengthHistory[liftName]) adaptState.strengthHistory[liftName]=[];
+  adaptState.strengthHistory[liftName].push({ wNum, diffPct, date: Date.now() });
+  if(adaptState.strengthHistory[liftName].length>6) adaptState.strengthHistory[liftName].shift();
+
+  // If 3+ consecutive sessions >10% below target, reset 1RM estimate from actuals
+  const recent=adaptState.strengthHistory[liftName].slice(-3);
+  if(recent.length>=3 && recent.every(r=>r.diffPct < -10)){
+    const bestActual=Math.max(...doneSets.map(sv=>parseFloat(sv.weight)||0));
+    // Back-calculate 1RM from best set (Epley formula)
+    const bestReps=parseInt(doneSets.find(sv=>parseFloat(sv.weight)===bestActual)?.reps)||5;
+    const estimated1rm = Math.round(bestActual*(1+bestReps/30)/2.5)*2.5;
+    const liftMap={'Back Squat':'squat1rm','Deadlift':'deadlift1rm','RDL':'rdl1rm',
+                   'Bench Press':'bench','Overhead Press':'ohp','Bent-over Row':'bentRow','DB Row':'bentRow'};
+    const awKey=liftMap[liftName];
+    if(awKey && estimated1rm < AW[awKey]*0.9){
+      AW[awKey] = Math.max(estimated1rm, AW[awKey]*0.8); // never drop more than 20%
+      adaptState[awKey+'_adj'] = AW[awKey];
+      adaptState[awKey+'_adjNote'] = `${liftName} target recalibrated to ${AW[awKey]}kg based on your logged sessions.`;
+      saveAdaptState(adaptState);
+      // Rebuild plan with new 1RM
+      rebuildAWFromEquipment();
+    }
+  }
+  saveAdaptState(adaptState);
+}
+
+// Expose adaptation notes for the progress dashboard
+function getAdaptNotes(){
+  const notes=[];
+  if(adaptState.paceAdjNote) notes.push(adaptState.paceAdjNote);
+  Object.keys(adaptState).filter(k=>k.endsWith('_adjNote')).forEach(k=>{
+    if(adaptState[k]) notes.push(adaptState[k]);
+  });
+  return notes;
 }
 
 function rebuildAWFromEquipment(){
@@ -2980,6 +3183,14 @@ function openDash(){
   dashLiftHistory=buildLiftHistory();
   renderDashTabs();
   renderBodyStats();
+  // Show plan adaptation notes
+  const notes=getAdaptNotes();
+  const wrap=document.getElementById('adapt-notes-wrap');
+  const list=document.getElementById('adapt-notes-list');
+  if(wrap&&list){
+    if(notes.length){ wrap.style.display='block'; list.innerHTML=notes.map(n=>`<div style="margin-bottom:.25rem;">→ ${n}</div>`).join(''); }
+    else { wrap.style.display='none'; }
+  }
   document.getElementById('dashModal').classList.add('open');
 }
 function closeDash(){ document.getElementById('dashModal').classList.remove('open'); }
