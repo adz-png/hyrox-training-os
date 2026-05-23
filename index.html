@@ -661,7 +661,7 @@ footer { text-align:center; padding:2rem 1rem; color:var(--faint); font-size:.68
   <div class="logo">HYROX<span> · OS</span></div>
   <div class="hstats">
     <div class="hs">5K <b>24:40</b></div>
-    <div class="hs hide-sm">SQ <b>120kg</b></div>
+    <div class="hs hide-sm">SQ <b>90kg×5</b></div>
     <div class="hs hide-sm">DL <b>135kg</b></div>
     <div class="hs">RHR <b>50</b></div>
     <button class="prog-dash-btn" onclick="openDash()">📈 Progress</button>
@@ -969,25 +969,26 @@ footer { text-align:center; padding:2rem 1rem; color:var(--faint); font-size:.68
   </div>
 </div>
 
-<footer>HYROX Training OS · Birmingham Pro Singles · 30 Oct 2026 · Target 75 min · Squat 120kg · DL 135kg · 5K 24:40</footer>
+<footer>HYROX Training OS · Birmingham Pro Singles · 30 Oct 2026 · Target 75 min · Squat 90kg×5 · Bench 80kg×8 · RDL 85kg×10</footer>
 
 <script>
 // ─── ATHLETE WEIGHTS ──────────────────────────────────────────────
 // 1RMs and working maxes provided by athlete
 const AW = {
-  squat1rm: 120,    // estimated
-  deadlift1rm: 135, // estimated
-  rdl1rm: 120,      // estimated
-  bentRow: 85,      // working max
-  latPull: 80,
-  cableRow: 80,
-  bench: 80,
-  ohp: 45,
-  curl: 20,         // per arm
+  // Updated from actual session data — May 2026
+  squat1rm: 101,    // Epley from 90kg×5: ~101kg
+  deadlift1rm: 135, // no recent data — keeping estimate
+  rdl1rm: 113,      // Epley from 85kg×10: ~113kg
+  bentRow: 101,     // Epley from 90kg×5: ~101kg (barbell row)
+  latPull: 70,
+  cableRow: 70,
+  bench: 101,       // Epley from 80kg×8: ~101kg
+  ohp: 50,          // Epley from 45kg×5: ~50kg
+  curl: 20,         // per arm — unchanged
   lunge: 20,        // per arm (dumbbells)
-  sandbagLunge: 20, // sandbag
-  wallBall: 9,
-  farmerCarry: 22,  // conservative start (25kg DBs available)
+  sandbagLunge: 20, // 20kg sandbag confirmed
+  wallBall: 9,      // 9kg confirmed — race weight
+  farmerCarry: 20,  // 20kg DBs — building toward 24kg race load
 };
 
 // Working weight helpers — snap to nearest achievable load with available kit
@@ -1001,14 +1002,16 @@ function loadEquipment(){ try{ return JSON.parse(localStorage.getItem(EQ_SK)||'n
 function saveEquipmentData(d){ try{ localStorage.setItem(EQ_SK, JSON.stringify(d)); }catch(e){} }
 
 const EQ_DEFAULTS = {
-  selected: ['treadmill','bike','squat-rack','barbell','dumbbells','pulley-cable','sandbag','wall-ball','pull-up-bar'],
+  selected: ['treadmill','bike','squat-rack','barbell','dumbbells','pulley-cable',
+             'sandbag','wall-ball','pull-up-bar','bench','dip-station'],
   // Dumbbells — individual weights owned (kg)
   dumbbells: [5, 7.5, 10, 12.5, 15, 20, 25],
-  // Plates (quantities) — pre-filled based on "max 130kg" with typical plate set
-  plates: { p25:2, p20:2, p15:0, p10:2, p5:2, p2:2, p1:2, p05:0 },
+  // Plates — actual inventory: bar 20kg + 2×20, 2×15, 2×10, 2×5, 4×2.5
+  // These also go on pulley for rows and lat pull-down
+  plates: { p25:0, p20:2, p15:2, p10:2, p5:2, p2:4, p1:0, p05:0 },
   // Hyrox kit
   sandbagKg: 20, wallballKg: 9, sledKg: 0,
-  custom: [], gymAccess: []
+  custom: ['Landmine attachment','4kg wall ball','6kg wall ball'], gymAccess: []
 };
 
 const EQ_CATALOGUE = {
@@ -1037,6 +1040,7 @@ const EQ_CATALOGUE = {
   ],
   hyrox: [
     {id:'sandbag', name:'Sandbag', note:'Specify weight below'},
+    {id:'landmine', name:'Landmine Attachment', note:'Squat, row, press variations'},
     {id:'wall-ball', name:'Wall Ball(s)', note:'Specify weight below'},
     {id:'sled', name:'Sled / Prowler', note:'Push & pull station'},
     {id:'pulley-cable', name:'Pulley / Cable System', note:'Lat pull, cable row'},
@@ -1152,7 +1156,7 @@ function getSubstitution(id){
   return subs[id]||null;
 }
 // ─── STORAGE ─────────────────────────────────────────────────────
-const SK = 'hyrox_v4';
+const SK = 'hyrox_v5'; // bumped — clears old plan week data
 function loadDone(){ try{ return JSON.parse(localStorage.getItem(SK)||'{}'); }catch(e){ return{}; } }
 function saveDone(d){ try{ localStorage.setItem(SK, JSON.stringify(d)); }catch(e){} }
 let done = loadDone();
@@ -1161,7 +1165,7 @@ function isDone(w,d){ return !!done[sKey(w,d)]; }
 function setDone(w,d,val){ if(val) done[sKey(w,d)]=true; else delete done[sKey(w,d)]; saveDone(done); }
 
 // Step completion storage
-const STEP_SK = 'hyrox_steps_v4';
+const STEP_SK = 'hyrox_steps_v5';
 
 // ── SKIP / UNABLE TO TRAIN ────────────────────────────────────────
 const SKIP_SK = 'hyrox_skip_v1';
@@ -1185,7 +1189,7 @@ function clearStepsForDay(w,d,stepCount){ for(let s=0;s<stepCount;s++) delete st
 
 // ─── ACTUAL LOG STORAGE ────────────────────────────────────────────
 // Stores what was really lifted/run vs the target
-const LOG_SK = 'hyrox_logs_v1';
+const LOG_SK = 'hyrox_logs_v2';
 function loadLogs(){ try{ return JSON.parse(localStorage.getItem(LOG_SK)||'{}'); }catch(e){ return{}; } }
 function saveLogs(l){ try{ localStorage.setItem(LOG_SK, JSON.stringify(l)); }catch(e){} }
 let actLog = loadLogs();
@@ -1766,27 +1770,32 @@ const PH_META=[
 ];
 
 const BM_DATA=[
-  [{v:'sub-23:00',l:'5K Target'},{v:'35km',l:'Weekly Run Vol'},{v:'All 8',l:'Stations at load'},{v:'Week 6',l:'Deload'}],
-  [{v:'sub-20:30',l:'5K Target'},{v:'45km',l:'Weekly Run Vol'},{v:'sub-90',l:'Dress Rehearsal'},{v:'Wk 16',l:'Full Sim'}],
+  [{v:'Enjoy',l:'Your Holiday'},{v:'2 runs',l:'If you feel like it'},{v:'Rest',l:'Is training'},{v:'Wk 2',l:'Block 1 starts'}],
+  [{v:'sub-23:00',l:'5K Target'},{v:'35km',l:'Weekly Run Vol'},{v:'All 8',l:'Stations at load'},{v:'Week 7',l:'Deload'}],
+  [{v:'sub-20:30',l:'5K Target'},{v:'45km',l:'Weekly Run Vol'},{v:'sub-90',l:'Dress Rehearsal'},{v:'Wk 17',l:'Full Sim'}],
   [{v:'75 min',l:'Race Target'},{v:'30 Oct',l:'Birmingham'},{v:'4:30/km',l:'Run Pace'},{v:'Pro',l:'Wave'}]
 ];
 
 const PH_NOTES=[
+  ['This is your only full rest week for 22 weeks. Use it.',
+   'Two optional easy runs are in the plan — do them only if you genuinely want to, not out of guilt.',
+   'Sleep well, eat well, walk around. Passive recovery is active preparation.',
+   'Block 1 starts week 2. You will come back fresher for having rested.'],
   ['Pro men station weights: SkiErg 1km, Sled Push 102kg+sled, Sled Pull 78kg, Burpee Broad Jump 80m, Row 1km, Farmer Carry 24kg/hand, Sandbag Lunge 100m at 30kg, Wall Ball 100 reps at 9kg to 3m target.',
-   'BOOK A HYROX GYM NOW — you need weekly sled and ski erg access for 22 weeks. Sled technique alone can save or cost you 8-10 minutes on race day.',
+   'BOOK A HYROX GYM NOW — you need weekly sled and ski erg access. Sled technique alone can save or cost you 8-10 minutes on race day.',
    'Your biggest limiter is running. 24:40 needs to come down to 20:30 by race day. Four disciplined running sessions per week throughout this block.',
    'Zone 2 running is 80% of all volume. HR below 145. Fully conversational. This is boring. Do it anyway.',
-   'At 90kg you are heavy for pro singles. Cutting to 84-86kg over 22 weeks is realistic and will meaningfully improve run economy.',
-   'Deload is week 6. Take it.'],
-  ['Block 2 Wks 7-12: race-pace intervals build from 4:50/km to 4:30/km. These are the most important sessions in the programme.',
-   'Block 3 Wks 13-18: full Hyrox simulations every Wednesday at pro station weights. First sim will be brutal — that is useful data.',
-   'Sled push at 102kg is not a strength problem — it is technique and breathing. Drive from hips not shoulders. Practice weekly.',
-   'Run-to-station transitions cost most first-timers 30-45 sec per station. Stop running, hit the station, control breathing in 3 steps.',
-   'Wall balls 100 reps: race strategy is 4x25 with 20 sec rest. Practice this in training, not for the first time on race day.',
-   'Deload weeks at 9, 12 and 15 are mandatory. Accumulated fatigue at this intensity causes injury.'],
-  ['Week 19: volume drops 40%. Keep 2 interval sessions and 1 short sim. Cut all long runs and heavy strength.',
-   'Week 20: finalise race strategy — target split per station, run pace between stations, sled breathing cues.',
-   'Week 21: 3 sessions only. One short interval, one station technique, one easy run. Nothing heroic.',
+   'At 90kg you are heavy for pro singles. Cutting to 84-86kg over 22 weeks is realistic and will improve run economy.',
+   'Deload is week 7. Take it.'],
+  ['Block 2 Wks 8-13: race-pace intervals build from 4:50/km to 4:30/km. These are the most important sessions in the programme.',
+   'Block 3 Wks 14-19: station blocks at full pro weights. One full dress rehearsal at week 17 — book the Hyrox gym.',
+   'Sled push at 102kg is not a strength problem — it is technique and breathing. Drive from hips not shoulders.',
+   'Run-to-station transitions cost most first-timers 30-45 sec per station. Stop, hit station, control breathing in 3 steps.',
+   'Wall balls 100 reps: race strategy is 4x25 with 20 sec rest. Practice this in training.',
+   'Deload weeks at 10, 13 and 16 are mandatory. Do not skip them.'],
+  ['Week 20: volume drops 40%. Keep 2 interval sessions and 1 short sim.',
+   'Week 21: finalise race strategy — target split per station, run pace, sled breathing cues.',
+   'Week 22: 3 sessions only. One short interval, one station technique, one easy run.',
    'Race week: Monday easy 20 min jog, Wednesday 4x400m at race pace, rest Thursday, race Friday 30 October.',
    'Birmingham morning: arrive 90 min early, walk the course, 10 min warm-up jog. Do not sprint km 1.',
    'Target splits for 75 min: 8km running 36 min at 4:30/km avg, SkiErg 4:30, Sled Push 3:30, Sled Pull 3:00, Burpees 5:00, Row 4:15, Farmer Carry 2:30, Sandbag 5:30, Wall Balls 6:00.']
@@ -3299,9 +3308,9 @@ function importGarminCSV(event){
 
 // ─── BACKUP / RESTORE ────────────────────────────────────────────
 const ALL_KEYS = [
-  'hyrox_v4',         // day completion
-  'hyrox_steps_v4',   // step completion
-  'hyrox_logs_v1',    // set/run logs
+  'hyrox_v5',         // day completion
+  'hyrox_steps_v5',   // step completion
+  'hyrox_logs_v2',    // set/run logs
   'hyrox_equipment_v1',
   'hyrox_bodystats_v1',
   'hyrox_curW_v1',
