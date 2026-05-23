@@ -1313,9 +1313,9 @@ function stepsB1Wed(w){ // Station Practice
   const wbReps=15+w*3;
   return [
     warmup(8),
-    {label:`SkiErg — 3×500m`,meta:`If at Hyrox gym. Tall posture, drive from lats not arms. Rest 90 sec. If no ski erg: 3×3 min seated band pull-down high reps.`},
-    {label:`Sled Push — 4×20m`,meta:`At Hyrox gym: 60kg+sled this week, adding load each block. Hips low, drive from legs. If no sled: sandbag bear-hug walk 4×30m.`,weight:`${Math.min(60+w*5,90)}kg load`},
-    {label:`Farmer Carry — 5×40m`,meta:`Pro weight is 24kg/hand. Start at 20kg/hand and build. Shoulders packed, core braced, fast walk.`,weight:`${nearestDB(Math.min(20+(w-1),25))}kg each hand`},
+    {label:`Treadmill Incline — 3×3 min`,meta:`8% incline, arms driving naturally, HR to Z4. Ski erg substitute — builds same pulling cardiovascular capacity. Rest 90 sec.`,weight:`8% incline`},
+    {label:`Sandbag Bear-hug Walk — 4×6 lengths (30m)`,meta:`Lean forward aggressively, drive from legs and hips. This is your sled push training — identical mechanics. Garden 5m lengths or hallway.`,weight:`${AW.sandbagLunge}kg sandbag`},
+    {label:`Farmer Carry — 5×8 lengths (40m)`,meta:`Garden 5m lengths — turn and go back. Pro race load is 24kg/hand. Packed shoulders, fast controlled walk.`,weight:`${nearestDB(Math.min(20+(w-1),25))}kg each hand`},
     {label:`Wall Ball — 4×${Math.min(wbReps,30)} reps`,meta:`Pro is 100 reps total to 3m. Build volume each week. Focus on catch and immediate squat — no pause at the top.`,weight:`${AW.wallBall}kg ball`},
     {label:`Burpee Broad Jump — 3×15m`,meta:`Chest to floor, explosive forward jump. Pro distance is 80m. Build the pattern — speed comes later.`},
     cooldown()
@@ -1329,11 +1329,11 @@ function stepsB1Thu(w){ // Upper Body Strength
   return [
     warmup(7),
     {label:`Bench Press — 4×6`,meta:`Full range. Pause at chest. ${plateBreakdown(wBench)}`,weight:`${wBench}kg`},
-    {label:`Pull-ups or Inverted Row — 4×6`,meta:`Dead hang. Full range. Build the pulling strength for SkiErg and rowing.`,weight:`BW`},
+    {label:`Pull-ups or Inverted Row — 4×6`,meta:`Dead hang. Full range. Build the pulling strength for rowing and ski erg stations.`,weight:`BW`},
     {label:`Barbell Overhead Press — 3×8`,meta:`Strict. No leg drive. ${plateBreakdown(wOhp)}`,weight:`${wOhp}kg`},
     {label:`DB Bent-over Row — 4×10 each`,meta:`Chest on bench. Elbow drives back past hip.`,weight:`${wRow}kg DB`},
     {label:`Tricep Dips — 3×max`,meta:`Full depth. Elbows back.`},
-    {label:`Face Pull / Band Pull-apart — 3×20`,meta:`Shoulder health. Non-negotiable for overhead work volume.`},
+    {label:`DB Rear Delt Raise — 3×20`,meta:`Hinge forward 45°, light DBs, raise to shoulder height. Rear delt health for all pressing and carrying.`,weight:`${nearestDB(7.5)}kg each`},
     {label:`Plank — 3×45s`,meta:`Squeeze glutes and abs. No hip sag.`},
     cooldown()
   ];
@@ -1349,7 +1349,7 @@ function stepsB1Fri(w){ // Run + Station Transitions
       meta:`Run 1km at ${pace}, then IMMEDIATELY into wall balls. No rest between run and station. Rest 2 min after balls. Practice the transition — it is a skill.`,
       weight:`${AW.wallBall}kg ball`
     })),
-    {label:`Rowing Erg — 3×500m`,meta:`At Hyrox gym. Strong catch, drive with legs first. If no rower: 3×3 min assault bike. Rest 90 sec.`},
+    {label:`Stationary Bike — 3×3 min max effort`,meta:`Max resistance. HR to Z4. Rowing station cardiovascular substitute. Rest 90 sec.`},
     cooldown()
   ];
 }
@@ -1371,10 +1371,10 @@ function stepsB1Sat(w){ // Post-bootcamp HYROX engine session
   return [
     {label:'Arrive fatigued from bootcamp — that is the point',meta:'The fatigue state when you arrive is the training stimulus. Race back half requires work when already tired.'},
     {label:`Wall Ball — 3×${wbReps} reps`,meta:'Focus on breathing rhythm and clean technique. Pro target is 100 reps — build the volume.',weight:`${AW.wallBall}kg ball`},
-    {label:'Farmer Carry — 4×40m',meta:'Race load is 24kg/hand. Build toward it. Short 45-sec rest — this is conditioning, not strength.',weight:`${farmerLoad}kg each`},
+    {label:'Farmer Carry — 4×8 lengths (40m)',meta:'Garden 5m lengths, turn and go. 24kg/hand race load — build toward it. 45-sec rest.',weight:`${farmerLoad}kg each`},
     {label:'Sandbag Lunge — 2×50m',meta:'Bear hug. Continuous. Do not stop mid-set. This is where race toughness is built.',weight:`${sandbagLoad}kg`},
     {label:'Burpee Broad Jump — 2×20m',meta:'Explosive. Consistent distance each rep — aim for 1.5m+. Build the pattern.'},
-    {label:w>=4?'SkiErg — 2×500m max effort':'Row or Bike — 2×500m max effort',meta:w>=4?'At Hyrox gym if possible. Pull from lats. Log split.':'Assault bike or rowing erg. 2 min rest between. Finish strong.'}
+    {label:'Treadmill Incline or Bike — 2×3 min max effort',meta:'8% incline treadmill or bike at max resistance. Everything in the tank. 2 min rest. Log HR.'}
   ];
 }
 
@@ -1424,8 +1424,8 @@ function stepsB2Wed(w){ // Full Hyrox Simulation (progressive)
   const sledLoad = Math.min(60+lw*5, 102);
   const sandbagLoad = Math.min(20+Math.floor(lw/2), 30);
   const farmerLoad = Math.min(20+Math.floor(lw/2), 24);
-  const skiSub = hasKit('ski-erg')?null:'No ski erg — substitute: 3 min max-effort seated band pull-down or 500m rowing erg';
-  const sledSub = hasKit('sled')?null:`No sled — substitute: ${sandbagLoad}kg sandbag bear-hug walk 50m at max effort`;
+  const skiSub = hasKit('ski-erg')?null:'Ski erg sub: treadmill 3 min at 8% incline, arms driving, HR to Z4. Same cardiovascular demand as ski erg.';
+  const sledSub = hasKit('sled')?null:`Sled sub: ${sandbagLoad}kg sandbag bear-hug walk, lean forward aggressively, drive from legs. Garden 5m lengths. Same hip drive as sled push.`;
 
   if(!isFullSim){
     // Station blocks (not full sim) — all weeks except week 16 dress rehearsal
@@ -1442,20 +1442,20 @@ function stepsB2Wed(w){ // Full Hyrox Simulation (progressive)
         meta:s.sub?`Run 1km at race pace then: ${s.sub}`:`Run 1km at ${targetIntervalPace(w)}, immediately into station. No rest between run and station. Log split.`,
         weight:i===3?`${AW.wallBall}kg ball`:i===0?'max effort':i===1?`${sledLoad}kg`:'explosive'
       })),
-      {label:`Farmer Carry — 4×80m`,meta:`Pro load is 24kg/hand. Build toward it.`,weight:`${farmerLoad}kg each`},
-      {label:`Rowing Erg — 2×500m`,meta:`Strong drive. If no rower: 2×3 min assault bike.`},
+      {label:`Farmer Carry — 16 lengths (80m)`,meta:`Garden 5m lengths. Pro load is 24kg/hand — build toward it.`,weight:`${farmerLoad}kg each`},
+      {label:`Stationary Bike — 2×3 min max effort`,meta:`Max resistance. HR to Z4. Rowing station cardiovascular substitute.`},
       cooldown()
     ];
   } else {
     // Weeks 13-18: full 8-station simulation
-    const rowSub = hasKit('rowing-erg')?null:'No rower — 4 min assault bike at max effort';
+    const rowSub = hasKit('rowing-erg')?null:'Row sub: stationary bike 3 min max resistance, or treadmill 1km at 6% incline. Same heart rate demand.';
     const stations=[
       {name:hasKit('ski-erg')?'SkiErg 1km':'SkiErg substitute', sub:skiSub, w:'max effort'},
       {name:hasKit('sled')?`Sled Push ${sledLoad}kg 50m`:'Sled substitute', sub:sledSub, w:`${sledLoad}kg`},
       {name:hasKit('sled')?`Sled Pull 78kg 50m`:'Sled Pull substitute', sub:sledSub, w:'78kg'},
       {name:'Burpee Broad Jump 80m', sub:null, w:'explosive'},
       {name:hasKit('rowing-erg')?'Rowing Erg 1km':'Row substitute', sub:rowSub, w:'max effort'},
-      {name:`Farmer Carry 24kg 200m`, sub:null, w:`${farmerLoad}kg each`},
+      {name:`Farmer Carry 200m (24kg/hand)`, sub:null, w:`${farmerLoad}kg each`},
       {name:`Sandbag Lunge ${sandbagLoad}kg 100m`, sub:null, w:`${sandbagLoad}kg`},
       {name:`Wall Ball 100 reps`, sub:null, w:`${AW.wallBall}kg`},
     ];
@@ -1528,11 +1528,11 @@ function stepsB2Sat(w){ // Post-bootcamp engine session — escalating
   return [
     {label:'Arrive fatigued — that is the point',meta:'Post-bootcamp fatigue is the training stimulus. Work at 85% effort throughout — not max, not easy.'},
     {label:`Wall Ball — 4×${wbReps} reps`,meta:`Race strategy is 4×25. Build toward unbroken sets. Rest 30 sec between.`,weight:`${AW.wallBall}kg`},
-    {label:`Farmer Carry — 5×40m`,meta:`Building toward 24kg/hand race load. Short 45-sec rest — this is conditioning.`,weight:`${farmerLoad}kg each`},
+    {label:`Farmer Carry — 5×8 lengths (40m)`,meta:`Garden 5m lengths. Building toward 24kg/hand race load. 45-sec rest.`,weight:`${farmerLoad}kg each`},
     {label:`Sandbag Lunge — ${isBlock3?3:2}×50m`,meta:'Bear hug. Consistent pace. No stopping mid-set.',weight:`${sandbagLoad}kg`},
-    {label:isBlock3?'SkiErg — 3×500m':'SkiErg or Row — 2×500m',meta:isBlock3?'Race effort. Rest 90 sec. At Hyrox gym.':'Max effort. Log split time.',weight:'race effort'},
+    {label:isBlock3?'Treadmill Incline — 3×3 min':'Treadmill or Bike — 2×3 min max effort',meta:isBlock3?'8% incline, arms driving, HR to Z4. Rest 90 sec.':'Max effort, 8% incline treadmill or bike max resistance.',weight:'8% incline'},
     {label:'Burpee Broad Jump — 3×20m',meta:'Explosive. Note distance per rep — aim for 1.5-2m each.'},
-    isBlock3?{label:'Sled Push — 2×20m at race load',meta:'Full race weight if at gym. Short and sharp. Practice the drive pattern.',weight:'102kg load'}:{label:'Row or Bike — 5 min max effort',meta:'Everything you have left.'}
+    isBlock3?{label:'Sandbag Bear-hug Walk — 4×6 lengths hard',meta:'Full effort. Lean forward, drive from legs. Sled push substitute. Garden 5m lengths.',weight:`${AW.sandbagLunge}kg sandbag`}:{label:'Bike — 5 min max effort',meta:'Max resistance. Everything left.'}
   ];
 }
 
@@ -1594,8 +1594,8 @@ function stepsB4Wed(w){
     return [
       warmup(6),
       {label:`Wall Ball technique — 3×20 reps`,meta:`Practice 3m target height. Focus on rhythm, not speed. Clean reps.`,weight:`${AW.wallBall}kg`},
-      {label:`Farmer Carry — 3×40m`,meta:`24kg/hand. Fast walk. Stay loose.`,weight:`${nearestDB(24)}kg each`},
-      {label:`SkiErg or substitute — 2×500m easy`,meta:`Technique only. Pull from lats. Tall posture. Stay calm.`},
+      {label:`Farmer Carry — 3×8 lengths (40m)`,meta:`Garden 5m lengths. 24kg/hand. Fast walk. Stay loose.`,weight:`${nearestDB(24)}kg each`},
+      {label:`Treadmill Incline — 2×3 min easy`,meta:`Light effort. 6% incline. Practice the arm drive pattern for ski erg. Book a gym visit before race day for actual ski erg technique.`},
       {label:`2×400m run @ race pace`,meta:`Confirm the legs are ready. Log pace.`,weight:`~${targetIntervalPace(19)}`},
       cooldown()
     ];
@@ -1604,10 +1604,10 @@ function stepsB4Wed(w){
   const sandbagLoad=Math.min(AW.sandbagLunge,30);
   return [
     {label:`Short Sim — 4 stations at race pace`,meta:`4 rounds only. Fresh effort. This is race sharpening, not building.`},
-    {label:`Rd 1: 1km run → SkiErg 500m`,meta:`Run at race pace. SkiErg at race effort. Log split.`,weight:`race effort`},
+    {label:`Rd 1: 1km run → Treadmill Incline 3 min`,meta:`Run 1km at race pace, jump on treadmill at 8% incline for 3 min max effort. Ski erg substitute. Log split.`,weight:`8% incline`},
     {label:`Rd 2: 1km run → Sled Push`,meta:`Full race-weight sled if available. Drive hard.`,weight:`102kg load`},
     {label:`Rd 3: 1km run → Wall Ball 25 reps`,meta:`This is your race set size. 25 unbroken. Rest 20 sec then continue.`,weight:`${AW.wallBall}kg`},
-    {label:`Rd 4: 1km run → Farmer Carry 100m`,meta:`24kg/hand. Strong finish.`,weight:`${nearestDB(24)}kg each`},
+    {label:`Rd 4: 1km run → Farmer Carry 100m (20×5m lengths)`,meta:`Garden 5m lengths. 24kg/hand. Strong finish.`,weight:`${nearestDB(24)}kg each`},
     cooldown()
   ];
 }
@@ -1621,7 +1621,7 @@ function stepsB4Thu(w){
     {label:`Bench Press — 3×4`,meta:`Maintenance load. Feel strong, stop there. ${plateBreakdown(wBench)}`,weight:`${wBench}kg`},
     {label:`Pull-ups — 3×5`,meta:`Sharp and crisp. No grinding.`},
     {label:`OHP — 2×5`,meta:`Maintenance. ${plateBreakdown(nearestBarbellLoad(Math.round(AW.ohp*0.82/2.5)*2.5))}`,weight:`${nearestBarbellLoad(Math.round(AW.ohp*0.82/2.5)*2.5)}kg`},
-    {label:`Face Pull — 2×20`,meta:'Shoulder health maintenance.'},
+    {label:`DB Rear Delt Raise — 2×20`,meta:'Light DBs, hinge forward 45°, raise to shoulder. Keeps shoulders healthy.',weight:`${nearestDB(7.5)}kg each`},
     cooldown()
   ];
 }
@@ -1633,7 +1633,7 @@ function stepsB4Fri(w){
       {label:`RACE DAY — Birmingham Hyrox Pro Singles`,meta:`Today is what the 22 weeks were for. Start controlled — first 2 stations set the tone. Run your own race. Target: 75 minutes.`},
       {label:`Race warm-up — 10 min easy jog`,meta:`Arrive 90 min early. Walk the course first. 10 min easy jog 45 min before start. 4×100m strides 20 min before start.`},
       {label:`Km 1-2 run: controlled start`,meta:`Target 4:35/km. Do not go with the fast pack. Save it for station 5 onwards.`},
-      {label:`SkiErg 1km → Sled Push 50m → Sled Pull 50m`,meta:`Stations 1-3. Ski erg: full drive from lats. Sled push: low hips, drive from legs. Sled pull: hand-over-hand, controlled.`},
+      {label:`SkiErg 1km → Sled Push 50m → Sled Pull 50m`,meta:`Stations 1-3. Race day — this is what the gym visits are for. Ski erg: tall, drive from lats not arms. Sled push: hips low, legs drive. Sled pull: hand-over-hand, stay low.`},
       {label:`Burpee Broad Jump 80m → Row 1km`,meta:`Stations 4-5. Burpees: explode forward each rep, consistent distance. Row: 1:55-2:00 split, legs-back-arms.`},
       {label:`Farmer Carry 200m → Sandbag Lunge 100m`,meta:`Stations 6-7. Carry: shoulders back, fast walk. Sandbag: bear hug, long stride, DO NOT stop.`},
       {label:`Wall Ball 100 reps → Finish`,meta:`Station 8. Strategy: 4×25 reps with 20 sec rest. Unbroken if feeling good. Dig in. 75 minutes is yours.`}
@@ -1773,7 +1773,7 @@ const BM_DATA=[
   [{v:'Enjoy',l:'Your Holiday'},{v:'2 runs',l:'If you feel like it'},{v:'Rest',l:'Is training'},{v:'Wk 2',l:'Block 1 starts'}],
   [{v:'sub-23:00',l:'5K Target'},{v:'35km',l:'Weekly Run Vol'},{v:'All 8',l:'Stations at load'},{v:'Week 7',l:'Deload'}],
   [{v:'sub-20:30',l:'5K Target'},{v:'45km',l:'Weekly Run Vol'},{v:'sub-90',l:'Dress Rehearsal'},{v:'Wk 17',l:'Full Sim'}],
-  [{v:'75 min',l:'Race Target'},{v:'30 Oct',l:'Birmingham'},{v:'4:30/km',l:'Run Pace'},{v:'Pro',l:'Wave'}]
+  [{v:'75 min',l:'Race Target'},{v:'30 Oct',l:'Birmingham'},{v:'4:45/km',l:'Target Run Pace'},{v:'5:03',l:'Current Pace'}]
 ];
 
 const PH_NOTES=[
@@ -1782,7 +1782,7 @@ const PH_NOTES=[
    'Sleep well, eat well, walk around. Passive recovery is active preparation.',
    'Block 1 starts week 2. You will come back fresher for having rested.'],
   ['Pro men station weights: SkiErg 1km, Sled Push 102kg+sled, Sled Pull 78kg, Burpee Broad Jump 80m, Row 1km, Farmer Carry 24kg/hand, Sandbag Lunge 100m at 30kg, Wall Ball 100 reps at 9kg to 3m target.',
-   'BOOK A HYROX GYM NOW — you need weekly sled and ski erg access. Sled technique alone can save or cost you 8-10 minutes on race day.',
+   'Book a Hyrox gym once a month from week 8 for sled and ski erg practice. Monthly visits are enough — technique is the goal. The week 17 dress rehearsal must be at a Hyrox gym.',
    'Your biggest limiter is running. 24:40 needs to come down to 20:30 by race day. Four disciplined running sessions per week throughout this block.',
    'Zone 2 running is 80% of all volume. HR below 145. Fully conversational. This is boring. Do it anyway.',
    'At 90kg you are heavy for pro singles. Cutting to 84-86kg over 22 weeks is realistic and will improve run economy.',
@@ -1798,7 +1798,7 @@ const PH_NOTES=[
    'Week 22: 3 sessions only. One short interval, one station technique, one easy run.',
    'Race week: Monday easy 20 min jog, Wednesday 4x400m at race pace, rest Thursday, race Friday 30 October.',
    'Birmingham morning: arrive 90 min early, walk the course, 10 min warm-up jog. Do not sprint km 1.',
-   'Target splits for 75 min: 8km running 36 min at 4:30/km avg, SkiErg 4:30, Sled Push 3:30, Sled Pull 3:00, Burpees 5:00, Row 4:15, Farmer Carry 2:30, Sandbag 5:30, Wall Balls 6:00.']
+   'Target splits for 75 min: 8km running ~38 min at 4:45/km avg, SkiErg 4:30, Sled Push 3:30, Sled Pull 3:00, Burpees 5:00, Row 4:15, Farmer Carry 2:30, Sandbag 5:30, Wall Balls 6:00. Current pace 5:03 — need 18 sec/km improvement over 22 weeks.']
 ];
 
 // ─── RENDER ───────────────────────────────────────────────────────
@@ -3711,4 +3711,4 @@ window.addEventListener('appinstalled',()=>{
 });
 </script>
 </body>
-</html>
+  </html>
