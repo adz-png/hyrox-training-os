@@ -9,7 +9,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="application-name" content="HYROX OS">
 <meta name="theme-color" content="#0a0a0a">
-<meta name="description" content="Personal Hyrox training plan — 2 year programme to Mixed Doubles debut and Sub-60 solo">
+<meta name="description" content="HYROX Training OS — 22 weeks to Birmingham Pro Singles, 30 Oct 2026. Target 75 min.">
 <meta name="msapplication-TileColor" content="#0a0a0a">
 
 <!-- PWA Manifest (inline via blob — no server needed) -->
@@ -262,6 +262,17 @@ header {
   min-width:0; width:100%;
 }
 .day-card.completed { border-color:rgba(45,212,160,.35); box-shadow:0 0 0 1px rgba(45,212,160,.08); }
+.day-card.skipped { border-color:rgba(245,166,35,.3); opacity:.7; }
+.day-card.skipped .day-hdr { background:rgba(245,166,35,.06); }
+.skip-btn { font-size:.58rem; color:var(--sub); background:none; border:1px solid var(--line2); border-radius:6px; padding:3px 7px; cursor:pointer; white-space:nowrap; font-family:'DM Sans',sans-serif; font-weight:500; transition:all .15s; flex-shrink:0; }
+.skip-btn.skipped { border-color:rgba(245,166,35,.4); color:var(--accent2); background:rgba(245,166,35,.08); }
+.skip-modal { position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:800; display:none; align-items:flex-end; justify-content:center; padding:1rem; }
+.skip-modal.open { display:flex; }
+.skip-box { background:var(--surface); border:1px solid var(--line2); border-radius:16px 16px 12px 12px; width:100%; max-width:480px; padding:1.25rem; }
+.skip-box-title { font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:.04em; margin-bottom:.9rem; color:var(--accent2); }
+.skip-reasons { display:grid; grid-template-columns:1fr 1fr; gap:.5rem; margin-bottom:.9rem; }
+.skip-reason-btn { background:var(--elevated); border:1px solid var(--line2); color:var(--text); font-size:.78rem; padding:10px; border-radius:9px; cursor:pointer; font-family:'DM Sans',sans-serif; text-align:center; }
+.skip-cancel { width:100%; padding:10px; background:none; border:1px solid var(--line2); color:var(--sub); font-family:'DM Sans',sans-serif; font-weight:600; font-size:.78rem; border-radius:9px; cursor:pointer; }
 .day-card.completed .day-hdr { background:rgba(45,212,160,.06); }
 .day-hdr {
   padding: .65rem .9rem;
@@ -659,12 +670,12 @@ footer { text-align:center; padding:2rem 1rem; color:var(--faint); font-size:.68
 </header>
 
 <div class="hero">
-  <div class="hero-eye">2–3 Year Hyrox Plan · 5 Days/Week · Home Gym · Personalised Weights</div>
-  <div class="hero-title">Build. Race.<br><em>Go Sub‑60.</em></div>
+  <div class="hero-eye">23 Weeks · Birmingham Hyrox · 30 Oct 2026 · Pro Singles · Target 75 Min</div>
+  <div class="hero-title">Birmingham.<br><em>Pro Singles.</em></div>
   <div class="goal-row">
-    <div class="gc p1"><div class="gc-lbl">Phase 1 · Wks 1–16</div><div class="gc-title">Foundation</div><div class="gc-sub">Mixed Doubles debut</div></div>
-    <div class="gc p2"><div class="gc-lbl">Phase 2 · Wks 17–36</div><div class="gc-title">Race Ready</div><div class="gc-sub">Competitive + solo debut</div></div>
-    <div class="gc p3"><div class="gc-lbl">Phase 3 · Wks 37–104</div><div class="gc-title">Sub‑60</div><div class="gc-sub">Elite solo performance</div></div>
+    <div class="gc p1"><div class="gc-lbl">Block 1 · Wks 2–7</div><div class="gc-title">Engine</div><div class="gc-sub">Base + all stations</div></div>
+    <div class="gc p2"><div class="gc-lbl">Blocks 2–3 · Wks 8–19</div><div class="gc-title">Race Sharp</div><div class="gc-sub">Pro loads · station blocks</div></div>
+    <div class="gc p3"><div class="gc-lbl">Block 4 · Wks 20–23</div><div class="gc-title">Taper</div><div class="gc-sub">Peak · 30 Oct race day</div></div>
   </div>
 </div>
 
@@ -680,22 +691,24 @@ footer { text-align:center; padding:2rem 1rem; color:var(--faint); font-size:.68
 </div>
 
 <div class="phase-nav">
-  <button class="pbtn active" onclick="setPhase(1)">Phase 1 · Foundation</button>
-  <button class="pbtn" onclick="setPhase(2)">Phase 2 · Race Ready</button>
-  <button class="pbtn" onclick="setPhase(3)">Phase 3 · Sub‑60</button>
+  <button class="pbtn active" onclick="setPhase(1)">🏖 Holiday</button>
+  <button class="pbtn" onclick="setPhase(2)">Block 1 · Engine</button>
+  <button class="pbtn" onclick="setPhase(3)">Blocks 2–3 · Race Sharp</button>
+  <button class="pbtn" onclick="setPhase(4)">Block 4 · Taper</button>
 </div>
 
 <div class="main">
   <div class="phase-section active" id="phase-1"></div>
   <div class="phase-section" id="phase-2"></div>
   <div class="phase-section" id="phase-3"></div>
+  <div class="phase-section" id="phase-4"></div>
 </div>
 
 <!-- SESSION OVERLAY -->
 <div class="session-overlay" id="sessionOverlay">
   <div class="session-topbar">
     <div class="sess-title-wrap">
-      <div class="sess-day-label" id="sess-day-label">Monday · Phase 1 · Week 1</div>
+      <div class="sess-day-label" id="sess-day-label">Monday · Block 1 · Week 1</div>
       <div class="sess-title" id="sess-title">Session</div>
     </div>
     <div class="timer-wrap">
@@ -755,9 +768,9 @@ footer { text-align:center; padding:2rem 1rem; color:var(--faint); font-size:.68
           <div class="dash-log-field">
             <div class="dash-log-lbl">Phase</div>
             <select class="dash-log-input" id="mt-phase" onchange="updateManualWeekOptions()">
-              <option value="1">Phase 1 (Wks 1–16)</option>
-              <option value="2">Phase 2 (Wks 17–36)</option>
-              <option value="3">Phase 3 (Wks 37–48)</option>
+              <option value="1">Block 1 (Wks 1–6)</option>
+              <option value="2">Blocks 2–3 (Wks 7–18)</option>
+              <option value="3">Block 4 Taper (Wks 19–22)</option>
             </select>
           </div>
           <div class="dash-log-field">
@@ -932,6 +945,15 @@ footer { text-align:center; padding:2rem 1rem; color:var(--faint); font-size:.68
   </div>
 </div>
 
+<!-- SKIP MODAL -->
+<div class="skip-modal" id="skipModal">
+  <div class="skip-box">
+    <div class="skip-box-title">⚠ Unable to Train Today</div>
+    <div class="skip-reasons" id="skip-reasons-grid"></div>
+    <button class="skip-cancel" onclick="closeSkipModal()">Cancel</button>
+  </div>
+</div>
+
 <!-- STRAVA MODAL -->
 <div class="modal-overlay" id="stravaModal">
   <div class="modal-box">
@@ -947,7 +969,7 @@ footer { text-align:center; padding:2rem 1rem; color:var(--faint); font-size:.68
   </div>
 </div>
 
-<footer>HYROX Training OS · 29 Mar 2026 · Squat 1RM 120kg · Deadlift 1RM 135kg · 5K 24:40 · RHR 50bpm</footer>
+<footer>HYROX Training OS · Birmingham Pro Singles · 30 Oct 2026 · Target 75 min · Squat 120kg · DL 135kg · 5K 24:40</footer>
 
 <script>
 // ─── ATHLETE WEIGHTS ──────────────────────────────────────────────
@@ -1109,10 +1131,12 @@ function plateBreakdown(totalLoad){
 }
 
 // Apply saved equipment values into AW immediately
-if(eqState.sandbagKg) AW.sandbagLunge = eqState.sandbagKg;
-if(eqState.wallballKg) AW.wallBall = eqState.wallballKg;
-const _maxDB=eqState.dumbbells&&eqState.dumbbells.length?Math.max(...eqState.dumbbells):25;
-AW.farmerCarry=Math.min(_maxDB,25);
+// Immediately sync AW from loaded equipment before buildPhase runs
+if(eqState.sandbagKg)  AW.sandbagLunge = eqState.sandbagKg;
+if(eqState.wallballKg) AW.wallBall     = eqState.wallballKg;
+if(eqState.sledKg)     AW.sledKg       = eqState.sledKg;
+const _maxDB = eqState.dumbbells&&eqState.dumbbells.length?Math.max(...eqState.dumbbells):25;
+AW.farmerCarry = Math.min(_maxDB,25);
 
 // Equipment helpers used by session step builders
 function hasKit(id){ return eqState.selected.includes(id); }
@@ -1138,6 +1162,19 @@ function setDone(w,d,val){ if(val) done[sKey(w,d)]=true; else delete done[sKey(w
 
 // Step completion storage
 const STEP_SK = 'hyrox_steps_v4';
+
+// ── SKIP / UNABLE TO TRAIN ────────────────────────────────────────
+const SKIP_SK = 'hyrox_skip_v1';
+function loadSkips(){ try{ return JSON.parse(localStorage.getItem(SKIP_SK)||'{}'); }catch(e){ return{}; } }
+function saveSkips(s){ try{ localStorage.setItem(SKIP_SK,JSON.stringify(s)); }catch(e){} }
+let skips = loadSkips();
+function isSkipped(w,d){ return !!skips[sKey(w,d)]; }
+function skipReason(w,d){ return skips[sKey(w,d)]||null; }
+function setSkip(w,d,reason){
+  if(reason){ skips[sKey(w,d)]=reason; setDone(w,d,false); }
+  else delete skips[sKey(w,d)];
+  saveSkips(skips);
+}
 function loadSteps(){ try{ return JSON.parse(localStorage.getItem(STEP_SK)||'{}'); }catch(e){ return{}; } }
 function saveSteps(s){ try{ localStorage.setItem(STEP_SK, JSON.stringify(s)); }catch(e){} }
 let stepsDone = loadSteps();
@@ -1216,361 +1253,492 @@ function cooldown(){
   return {label:'Cool-down — 5 min',meta:'Easy walk or bike, static stretches: quads, hamstrings, hip flexors, chest. Deep breathing.'};
 }
 
-// ─── PHASE 1 SESSION STEPS ──────────────────────────────────────
-function stepsP1Mon(w){
-  const wSq=sq(0.72+(w-1)*0.01);
-  const wRdl=rdl(0.68+(w-1)*0.01);
-  const wLeg=nearestBarbellLoad(Math.round(AW.squat1rm*(0.55+(w-1)*0.008)/2.5)*2.5);
-  const sets=3+Math.floor(w/5);
-  const reps=5+Math.floor(w/4);
-  const lungeLoad=Math.min(AW.sandbagLunge+(w-1)*0.5,25);
-  const thrustLoad=nearestBarbellLoad(Math.round(AW.squat1rm*(0.45+(w-1)*0.01)/2.5)*2.5);
-  const calfLoad=nearestBarbellLoad(Math.round(60+(w-1)*2.5));
+// ─── PRO SINGLES BIRMINGHAM — SESSION STEPS ─────────────────────
+// 22 weeks: Block 1 (1-6), Blocks 2-3 (7-18), Block 4 Taper (19-22)
+// Pro station weights: Sled Push 102kg+, Sled Pull 78kg, Sandbag 30kg,
+// Farmer Carry 24kg/hand, Wall Ball 9kg/3m, Row 1km, SkiErg 1km
+// Race target: 75 min · Birmingham 30 Oct 2026
+
+// ── PACE HELPERS ─────────────────────────────────────────────────
+// Returns target pace string for a given week
+// Block 1 (1-6): Z2 base 6:00-5:30/km · intervals start 5:00/km
+// Block 2 (7-12): intervals 4:50→4:30/km
+// Block 3 (13-18): intervals 4:30→4:15/km, long runs faster
+// Block 4 (19-22): sharpening 4:15→4:10/km
+function targetZ2Pace(w){
+  const secs = Math.max(300, 360 - w*3);
+  return `${Math.floor(secs/60)}:${String(secs%60).padStart(2,'0')}/km`;
+}
+function targetIntervalPace(w){
+  const secs = Math.max(255, 310 - w*2.5);
+  return `${Math.floor(secs/60)}:${String(secs%60).padStart(2,'0')}/km`;
+}
+
+// ── BLOCK 1 SESSIONS (Weeks 1–6) ─────────────────────────────────
+
+function stepsB1Mon(w){ // Heavy Lower — Foundation
+  const wSq=sq(0.72+(w-1)*0.015);
+  const wRdl=rdl(0.68+(w-1)*0.012);
+  const thrustLoad=nearestBarbellLoad(Math.round(AW.squat1rm*(0.45+(w-1)*0.015)/2.5)*2.5);
+  const calfLoad=nearestBarbellLoad(Math.round(60+(w-1)*3));
+  const sets=3+Math.floor(w/3);
   return [
     warmup(8),
-    {label:`Back Squat — ${sets}×${reps}`,meta:`Focus: controlled descent (3 sec down), drive through heels. 3 min rest between sets. ${plateBreakdown(wSq)}`,weight:`${wSq}kg`},
-    {label:`Romanian Deadlift — 4×10`,meta:`Hinge at hips, soft knee, bar tracks close to shins. Slow 3-sec eccentric — feel the stretch. ${plateBreakdown(wRdl)}`,weight:`${wRdl}kg`},
-    {label:`Leg Press — 3×12 (or Hack Squat)`,meta:'If no leg press, use barbell squat at lighter load with wider stance. Feet high on platform = more hamstring/glute.',weight:`${wLeg}kg`},
-    {label:`Sandbag Forward Lunge — ${2+Math.floor(w/4)}×${10+Math.floor(w/4)} each leg`,meta:'Bear hug sandbag to chest. Long stride, knee tracks over toe. Rest 90 sec between sets.',weight:`${lungeLoad}kg sandbag`},
-    {label:'Barbell Hip Thrust — 4×12',meta:`Barbell across hips, shoulder blades on bench. Drive through heels, squeeze glutes hard at top. This builds Hyrox sled push power. ${plateBreakdown(thrustLoad)}`,weight:`${thrustLoad}kg`},
-    {label:'Lying DB Hamstring Curl — 4×12',meta:'Lie face down, hold a dumbbell between your feet. Curl heels toward glutes, lower slowly (3 sec). Full range. Excellent hamstring isolation with no special equipment.',weight:`${nearestDB(10+Math.floor(w/3))}kg DB`},
-    {label:`Seated Calf Raise or Standing Calf Raise — 4×20`,meta:'Full range: heel drops below level at bottom, rise high on toes at top. Hold 1 sec. Protects achilles under run volume.',weight:`${calfLoad}kg barbell or heavy DBs`},
+    {label:`Back Squat — ${sets}×5`,meta:`Competition stance. 3 min rest. Drive through floor. ${plateBreakdown(wSq)}`,weight:`${wSq}kg`},
+    {label:`Romanian Deadlift — 4×8`,meta:`Slow 3-sec eccentric. Bar stays close. Build the posterior chain that powers the sled. ${plateBreakdown(wRdl)}`,weight:`${wRdl}kg`},
+    {label:`Sandbag Forward Lunge — 3×50m`,meta:`Bear hug. Pro race weight is 30kg — train at 20kg now, progress each block. Long stride, controlled.`,weight:`${Math.min(AW.sandbagLunge,25)}kg sandbag`},
+    {label:`Barbell Hip Thrust — 3×12`,meta:`Full hip extension, 1 sec hold. Glute power for sled drive. ${plateBreakdown(thrustLoad)}`,weight:`${thrustLoad}kg`},
+    {label:`Lying DB Hamstring Curl — 4×12`,meta:`Face down, DB between feet. 3-sec eccentric. Hamstring strength = run economy + injury prevention.`,weight:`${nearestDB(10+(w-1)*1)}kg DB`},
+    {label:`Calf Raise — 4×20`,meta:`Full range, 1-sec hold at top. Protects achilles under run load.`,weight:`${calfLoad}kg`},
     cooldown()
   ];
 }
-function stepsP1Tue(w){
-  const km=Math.min(5+Math.floor(w*0.5),10);
-  const paceS=Math.round(330-w*2);
-  const paceStr=`${Math.floor(paceS/60)}:${String(paceS%60).padStart(2,'0')}/km`;
+
+function stepsB1Tue(w){ // Z2 Run — aerobic base
+  const km=Math.min(6+w,12);
+  const pace=targetZ2Pace(w);
   return [
-    {label:'Treadmill warm-up — 5 min walk/jog',meta:'Start at 1% incline. Gradual ramp to easy running pace. Let HR settle.'},
-    {label:`Zone 2 Run — ${km}km`,meta:`Fully conversational pace. If you can't speak in full sentences, slow down. HR target: below 145bpm.`,weight:`~${paceStr} pace`},
-    {label:'Cadence check',meta:'Every 5 min, count steps for 15 sec × 4. Target 42–45 per leg (170+ spm total). Shorten stride if below.'},
+    {label:`Warm-up — 5 min walk/jog`,meta:`Start easy. 1% incline. Let HR settle before you find your pace.`},
+    {label:`Zone 2 Run — ${km}km`,meta:`HR below 145bpm at all times. Fully conversational — if you cannot complete sentences, slow down. This is your aerobic base session.`,weight:`~${pace} pace`},
+    {label:`Cadence check every 2km`,meta:`Count steps for 15 sec × 4. Target 42-45 per leg (170+ spm). Shorten stride if below — do not increase speed to hit cadence.`},
     cooldown()
   ];
 }
-function stepsP1Wed(w){
-  const wbSets=3+Math.floor(w/3);
-  const wbReps=15+Math.floor(w/2);
-  const lungeReps=3+Math.floor(w/4);
-  const burpeeRounds=2+Math.floor(w/4);
-  // Odd weeks = Hyrox station practice, Even weeks = Upper body hypertrophy
-  if(w%2!==0){
-    // ── Hyrox Station Week ──
-    return [
-      warmup(7),
-      {label:`Wall Ball — ${wbSets}×${wbReps} reps`,meta:'Feet shoulder-width, squat to parallel, explode and release ball to target (~3m). Catch on the way down.',weight:`${AW.wallBall}kg ball`},
-      {label:`Sandbag Forward Lunge — ${lungeReps}×50m`,meta:'Sandbag in bear hug. Continuous walking lunges for 50m. Rest 90 sec between sets.',weight:`${AW.sandbagLunge}kg`},
-      {label:'Farmer Carry — 4×40m',meta:'Heavy dumbbells at sides, shoulders back and down. Controlled walk, no swaying.',weight:`${AW.farmerCarry}kg each hand`},
-      {label:`Burpee Broad Jump — ${burpeeRounds}×10m`,meta:'Chest to floor, explosive jump forward as far as possible. This is a core Hyrox station — practice the movement.'},
-      {label:'Easy Bike Cool-down — 5 min',meta:'Zero resistance, let heart rate come down below 120. Breathe through the nose.'}
-    ];
-  } else {
-    // ── Upper Body Hypertrophy Week ──
-    const wIncline=nearestDB(Math.min(Math.round(AW.bench*0.6),25));
-    const wPullover=nearestDB(Math.min(15+Math.floor(w/3),25));
-    const wFaceP=nearestDB(Math.min(10+Math.floor(w/4),20));
-    return [
-      warmup(7),
-      {label:`Incline DB Press — 4×10`,meta:'45° incline bench or propped on floor. Control the press, squeeze at top. Builds upper chest and shoulder stability.',weight:`${wIncline}kg each`},
-      {label:'Cable Row or Pulley Row — 4×10',meta:'Using your pulley cable system. Elbows drive back, shoulder blades squeeze together. Full stretch at front.',weight:`${nearestDB(Math.min(AW.cableRow*0.7,25))}kg`},
-      {label:'Lateral Raises — 3×15',meta:'Strict form — lead with elbows, only to shoulder height. No swinging. Shoulder width and stability.',weight:`${nearestDB(Math.min(8+Math.floor(w/3),15))}kg each`},
-      {label:'DB Pullover — 3×12',meta:'Lie across bench, one heavy DB. Arc from chest overhead, keep slight elbow bend. Builds lat and chest depth.',weight:`${wPullover}kg`},
-      {label:'Face Pull / Band Pull-apart — 3×20',meta:'If no cable, use resistance band. Pull to forehead level, elbows high. Critical for shoulder health and posture.'},
-      {label:`Tricep Overhead Extension — 3×12`,meta:'One heavy DB held with both hands overhead. Lower behind head slowly, press back up.',weight:`${nearestDB(Math.min(15+Math.floor(w/3),25))}kg`},
-      {label:'Easy Bike Cool-down — 5 min',meta:'Zero resistance, let heart rate come down below 120.'}
-    ];
-  }
-}
-function stepsP1Thu(w){
-  const wBench=nearestBarbellLoad(Math.round(AW.bench*(0.72+(w-1)*0.008)/2.5)*2.5);
-  const wRow=nearestDB(Math.min(Math.round(AW.bentRow*(0.7+(w-1)*0.005)),25));
-  const wOhp=nearestBarbellLoad(Math.round(AW.ohp*(0.80+(w-1)*0.008)/2.5)*2.5);
-  const wCurl=nearestDB(Math.min(AW.curl+Math.floor(w/6),25));
+
+function stepsB1Wed(w){ // Station Practice
+  const wbReps=15+w*3;
   return [
     warmup(8),
-    {label:`Bench Press — 4×${w<=8?8:6}`,meta:`Control the descent, full range, pause briefly at chest. ${plateBreakdown(wBench)}`,weight:`${wBench}kg`},
-    {label:'Pull-ups or Inverted Row — 4×6',meta:'Dead hang at bottom, chin over bar at top. Inverted row under squat rack bar if pull-ups are too hard. No kipping.',weight:'BW'},
-    {label:`Dumbbell Bent-over Row — 3×${w<=8?12:10} each arm`,meta:'Chest supported on incline bench or brace on knee. Drive elbow behind body. Full stretch at bottom.',weight:`${wRow}kg DB`},
-    {label:`Overhead Press — 4×${w<=8?10:8}`,meta:`Barbell from rack or dumbbells. Brace core, press directly overhead, controlled descent. ${plateBreakdown(wOhp)}`,weight:`${wOhp}kg`},
-    {label:'Tricep Dips — 3×max',meta:'Parallel bars or edge of bench. Full depth, elbows back not flared. Adds pushing strength critical for sled.'},
-    {label:`Bicep Curl — 3×12 each arm`,meta:'Strict form — no swinging. Alternate arms or simultaneous. Builds pulling strength for farmer carry.',weight:`${wCurl}kg DB`},
-    {label:`Plank — 3×${30+w*5}s`,meta:'Forearms, elbows under shoulders. Squeeze glutes and abs throughout. No hip sag.'},
+    {label:`SkiErg — 3×500m`,meta:`If at Hyrox gym. Tall posture, drive from lats not arms. Rest 90 sec. If no ski erg: 3×3 min seated band pull-down high reps.`},
+    {label:`Sled Push — 4×20m`,meta:`At Hyrox gym: 60kg+sled this week, adding load each block. Hips low, drive from legs. If no sled: sandbag bear-hug walk 4×30m.`,weight:`${Math.min(60+w*5,90)}kg load`},
+    {label:`Farmer Carry — 5×40m`,meta:`Pro weight is 24kg/hand. Start at 20kg/hand and build. Shoulders packed, core braced, fast walk.`,weight:`${nearestDB(Math.min(20+(w-1),25))}kg each hand`},
+    {label:`Wall Ball — 4×${Math.min(wbReps,30)} reps`,meta:`Pro is 100 reps total to 3m. Build volume each week. Focus on catch and immediate squat — no pause at the top.`,weight:`${AW.wallBall}kg ball`},
+    {label:`Burpee Broad Jump — 3×15m`,meta:`Chest to floor, explosive forward jump. Pro distance is 80m. Build the pattern — speed comes later.`},
     cooldown()
   ];
 }
-function stepsP1Fri(w){
-  const rounds=Math.min(3+Math.floor(w/3),6);
-  const paceS=Math.round(310-w*2);
-  const paceStr=`${Math.floor(paceS/60)}:${String(paceS%60).padStart(2,'0')}/km`;
-  const wbReps=12+Math.floor(w/2);
+
+function stepsB1Thu(w){ // Upper Body Strength
+  const wBench=nearestBarbellLoad(Math.round(AW.bench*(0.72+(w-1)*0.01)/2.5)*2.5);
+  const wOhp=nearestBarbellLoad(Math.round(AW.ohp*(0.80+(w-1)*0.01)/2.5)*2.5);
+  const wRow=nearestDB(Math.min(Math.round(AW.bentRow*(0.70+(w-1)*0.008)),25));
+  return [
+    warmup(7),
+    {label:`Bench Press — 4×6`,meta:`Full range. Pause at chest. ${plateBreakdown(wBench)}`,weight:`${wBench}kg`},
+    {label:`Pull-ups or Inverted Row — 4×6`,meta:`Dead hang. Full range. Build the pulling strength for SkiErg and rowing.`,weight:`BW`},
+    {label:`Barbell Overhead Press — 3×8`,meta:`Strict. No leg drive. ${plateBreakdown(wOhp)}`,weight:`${wOhp}kg`},
+    {label:`DB Bent-over Row — 4×10 each`,meta:`Chest on bench. Elbow drives back past hip.`,weight:`${wRow}kg DB`},
+    {label:`Tricep Dips — 3×max`,meta:`Full depth. Elbows back.`},
+    {label:`Face Pull / Band Pull-apart — 3×20`,meta:`Shoulder health. Non-negotiable for overhead work volume.`},
+    {label:`Plank — 3×45s`,meta:`Squeeze glutes and abs. No hip sag.`},
+    cooldown()
+  ];
+}
+
+function stepsB1Fri(w){ // Run + Station Transitions
+  const rounds=2+Math.floor(w/2);
+  const pace=targetZ2Pace(w-1);
   return [
     warmup(6),
     ...Array.from({length:rounds},(_,i)=>({
-      label:`Round ${i+1}: 1km Run + Wall Balls`,
-      meta:`1km treadmill at ${paceStr}, then IMMEDIATELY into ${wbReps} wall balls. No rest between run and balls. Rest 2 min after balls before next round.`,
+      label:`Round ${i+1} — 1km run → 20 wall balls`,
+      meta:`Run 1km at ${pace}, then IMMEDIATELY into wall balls. No rest between run and station. Rest 2 min after balls. Practice the transition — it is a skill.`,
       weight:`${AW.wallBall}kg ball`
     })),
+    {label:`Rowing Erg — 3×500m`,meta:`At Hyrox gym. Strong catch, drive with legs first. If no rower: 3×3 min assault bike. Rest 90 sec.`},
     cooldown()
   ];
 }
 
-function stepsP1Deload(w, dayIdx){
-  const deloadSteps=[
-    [{label:'Rest Day',meta:'Complete rest. Walk if you want but no structured training. Foam roll for 15 min if desired. Sleep 8+ hrs tonight.'}],
-    [{label:'Easy Treadmill Walk/Run — 4km',meta:'HR below 135 at all times. Walk if needed. No pace target. Breathe through nose.'},{label:'Mobility — 10 min',meta:'Hip flexors, calves, thoracic spine rotation. No rushing.'}],
-    [{label:'Bike — 20 min easy',meta:'Zero effort. Legs moving, nothing more.'},{label:'Full body stretch — 15 min',meta:'Hold each stretch 30–45 sec. Focus on hip flexors, quads, lats, shoulders.'}],
-    [{label:'Squat — 3×5 @ 50% load',meta:'Light, controlled. Focus on form not weight.',weight:`${sq(0.5)}kg`},{label:'Hip mobility — 10 min',meta:'90/90 stretches, pigeon pose, couch stretch.'}],
-    [{label:'Easy Run — 5km',meta:'Conversational pace only. HR under 140. Enjoy it — you\'ve earned this deload.'}]
-  ];
-  return deloadSteps[dayIdx] || [{label:'Rest',meta:'Recovery day.'}];
+function stepsB1Deload(dayIdx){
+  return [
+    [{label:'Full Rest',meta:'No training. Foam roll 15 min. Sleep 8+ hrs. Week 6 is the last deload before the real work begins.'}],
+    [{label:`Easy Run — 4km`,meta:`HR below 130. Walk if needed. Just moving.`}],
+    [{label:'Easy Bike — 20 min',meta:'Zero resistance. Active recovery only.'},{label:'Full body stretch — 15 min',meta:'Hip flexors, quads, lats, shoulders. Hold 45 sec each.'}],
+    [{label:`Squat — 3×5 @ 50%`,meta:'Light. Movement quality only.',weight:`${sq(0.5)}kg`},{label:'Hip mobility — 10 min',meta:'90/90, couch stretch, pigeon.'}],
+    [{label:`Easy Run — 5km`,meta:'Conversational. Reflect on block 1. Block 2 starts next week.'}]
+  ][dayIdx] || [{label:'Rest',meta:'Recovery.'}];
 }
 
-// ─── PHASE 2 SESSION STEPS ───────────────────────────────────────
-function stepsP2Mon(w){
-  const lw=w-16;
-  const wSq=sq(0.75+(lw-1)*0.012);
-  const wDl=dl(0.75+(lw-1)*0.01);
-  const wRdl=rdl(0.70+(lw-1)*0.01);
-  const thrustLoad=nearestBarbellLoad(Math.round(AW.squat1rm*(0.55+(lw-1)*0.012)/2.5)*2.5);
+function stepsB1Sat(w){ // Post-bootcamp HYROX engine session
+  const wbReps=Math.min(15+w*3,40);
+  const farmerLoad=nearestDB(Math.min(20+(w-1),25));
+  const sandbagLoad=Math.min(AW.sandbagLunge,25);
+  return [
+    {label:'Arrive fatigued from bootcamp — that is the point',meta:'The fatigue state when you arrive is the training stimulus. Race back half requires work when already tired.'},
+    {label:`Wall Ball — 3×${wbReps} reps`,meta:'Focus on breathing rhythm and clean technique. Pro target is 100 reps — build the volume.',weight:`${AW.wallBall}kg ball`},
+    {label:'Farmer Carry — 4×40m',meta:'Race load is 24kg/hand. Build toward it. Short 45-sec rest — this is conditioning, not strength.',weight:`${farmerLoad}kg each`},
+    {label:'Sandbag Lunge — 2×50m',meta:'Bear hug. Continuous. Do not stop mid-set. This is where race toughness is built.',weight:`${sandbagLoad}kg`},
+    {label:'Burpee Broad Jump — 2×20m',meta:'Explosive. Consistent distance each rep — aim for 1.5m+. Build the pattern.'},
+    {label:w>=4?'SkiErg — 2×500m max effort':'Row or Bike — 2×500m max effort',meta:w>=4?'At Hyrox gym if possible. Pull from lats. Log split.':'Assault bike or rowing erg. 2 min rest between. Finish strong.'}
+  ];
+}
+
+// ── BLOCKS 2–3 SESSIONS (Weeks 7–18) ─────────────────────────────
+// Week offset for these sessions: lw = w-6
+
+function stepsB2Mon(w){ // Heavy Lower — Race Loads
+  const lw=w-6;
+  const wSq=sq(0.76+(lw-1)*0.014);
+  const wDl=dl(0.76+(lw-1)*0.012);
+  const wRdl=rdl(0.72+(lw-1)*0.010);
+  const thrustLoad=nearestBarbellLoad(Math.round(AW.squat1rm*(0.52+(lw-1)*0.015)/2.5)*2.5);
   const calfLoad=nearestBarbellLoad(Math.round(70+(lw-1)*3));
   return [
     warmup(10),
-    {label:`Back Squat — 4×5`,meta:`Competition prep loading. 4 min rest between sets — full recovery required at these loads. ${plateBreakdown(wSq)}`,weight:`${wSq}kg`},
-    {label:`Deadlift — 4×4`,meta:`Heavy. Brace hard before each pull. Reset on the floor between reps — no touch-and-go. ${plateBreakdown(wDl)}`,weight:`${wDl}kg`},
-    {label:`Romanian Deadlift — 3×10`,meta:`Immediately after conventional DL while the pattern is warm. Lighter, slower, feel the hamstring load. ${plateBreakdown(wRdl)}`,weight:`${wRdl}kg`},
-    {label:`Sandbag Forward Lunge — continuous 60m`,meta:'Bear hug. Non-stop 60m — this is the Hyrox lunge station distance. Log time each week.',weight:`${Math.min(AW.sandbagLunge+Math.floor(lw/4),25)}kg`},
-    {label:'Barbell Hip Thrust — 3×10',meta:`Barbell across hips, shoulder blades on bench. Full hip extension and glute squeeze at top. Drives sled push power. ${plateBreakdown(thrustLoad)}`,weight:`${thrustLoad}kg`},
-    {label:'Bulgarian Split Squat — 3×10 each',meta:'Rear foot elevated on bench. Front foot forward enough for vertical shin. Deep lunge — this will hurt.',weight:`${nearestDB(Math.min(AW.lunge+Math.floor(lw/2),eqState.dumbbells&&eqState.dumbbells.length?Math.max(...eqState.dumbbells):25))}kg DBs`},
-    {label:'Lying DB Hamstring Curl — 4×10',meta:'Lie face down, dumbbell between feet. Curl heels toward glutes, 3-sec eccentric. Heavier each week. Key hamstring builder for run speed and injury prevention.',weight:`${nearestDB(Math.min(12+Math.floor(lw/2),25))}kg DB`},
-    {label:`Calf Raise — 4×20`,meta:'Full range, 1 sec hold at top. Heavy loading. Protects achilles under high run mileage.',weight:`${calfLoad}kg`},
+    {label:`Back Squat — 4×4`,meta:`Heavy. 4 min rest. Record every set. ${plateBreakdown(wSq)}`,weight:`${wSq}kg`},
+    {label:`Deadlift — 4×3`,meta:`Reset between reps. Brace hard. ${plateBreakdown(wDl)}`,weight:`${wDl}kg`},
+    {label:`Romanian Deadlift — 3×8`,meta:`After heavy pulls while pattern is warm. Slow and controlled. ${plateBreakdown(wRdl)}`,weight:`${wRdl}kg`},
+    {label:`Sandbag Lunge — 2×100m continuous`,meta:`Pro race distance. Bear hug. No stopping. Log your time — aim to improve weekly.`,weight:`${Math.min(AW.sandbagLunge+Math.floor(lw/3),30)}kg sandbag`},
+    {label:`Barbell Hip Thrust — 3×10`,meta:`Heavy loading. 1 sec hold at top. ${plateBreakdown(thrustLoad)}`,weight:`${thrustLoad}kg`},
+    {label:`Bulgarian Split Squat — 3×8 each`,meta:`Rear foot elevated. Deep lunge. Single-leg power for the sled.`,weight:`${nearestDB(Math.min(AW.lunge+Math.floor(lw/2),25))}kg DBs`},
+    {label:`Lying DB Hamstring Curl — 4×10`,meta:`Slow eccentric. Load this hard — hamstrings are your running engine.`,weight:`${nearestDB(Math.min(12+lw,25))}kg DB`},
+    {label:`Calf Raise — 4×20`,meta:`Full range. Heavy.`,weight:`${calfLoad}kg`},
     cooldown()
   ];
 }
-function stepsP2Tue(w){
-  const lw=w-16;
-  const reps=6+Math.floor((lw-1)/5);
-  const paceS=Math.round(285-Math.floor((lw-1)/4)*5);
-  const paceStr=`${Math.floor(paceS/60)}:${String(paceS%60).padStart(2,'0')}/km`;
+
+function stepsB2Tue(w){ // Race-Pace Intervals
+  const lw=w-6;
+  const reps=4+Math.floor(lw/3);
+  const pace=targetIntervalPace(w);
+  const paceTarget=`${pace} — this is inside your 75 min race pace`;
   return [
-    {label:'Warm-up — 1km easy + strides',meta:'1km jog, then 4×50m strides at race pace. Wake the legs up before intervals.'},
+    {label:`Warm-up — 1.5km easy + 4 strides`,meta:`Build gradually. 4×80m at race pace with full recovery. Wake the legs before intervals.`},
     ...Array.from({length:reps},(_,i)=>({
       label:`Interval ${i+1} — 1km`,
-      meta:`Target pace: ${paceStr}. This is your Hyrox race pace. 90 sec easy jog recovery after. Record actual pace.`,
-      weight:`${paceStr} pace`
+      meta:`Target: ${paceTarget}. 90 sec easy jog recovery. Log actual pace every rep. This is where your 75 min target is built.`,
+      weight:pace
     })),
-    {label:'Cool-down — 1km easy',meta:'Jog slowly, let HR fall. Stretch calves and quads immediately after.'}
+    {label:`Cool-down — 1km easy`,meta:`Jog slowly. Stretch calves and quads immediately. Log all splits in the run fields.`}
   ];
 }
-function stepsP2Wed(w){
-  const lw=w-16;
+
+function stepsB2Wed(w){ // Full Hyrox Simulation (progressive)
+  const lw=w-6;
+  const isFullSim = lw>=7; // weeks 13+ = full 8-station sim
+  const sledLoad = Math.min(60+lw*5, 102);
+  const sandbagLoad = Math.min(20+Math.floor(lw/2), 30);
+  const farmerLoad = Math.min(20+Math.floor(lw/2), 24);
+  const skiSub = hasKit('ski-erg')?null:'No ski erg — substitute: 3 min max-effort seated band pull-down or 500m rowing erg';
+  const sledSub = hasKit('sled')?null:`No sled — substitute: ${sandbagLoad}kg sandbag bear-hug walk 50m at max effort`;
+
+  if(!isFullSim){
+    // Station blocks (not full sim) — all weeks except week 16 dress rehearsal
+    const stations=[
+      {name:hasKit('ski-erg')?'SkiErg 1km':'SkiErg substitute', sub:skiSub},
+      {name:hasKit('sled')?`Sled Push ${sledLoad}kg 50m`:'Sled Push substitute', sub:sledSub},
+      {name:'Burpee Broad Jump 40m', sub:null},
+      {name:'Wall Ball 50 reps', sub:null},
+    ];
+    return [
+      {label:`Station Blocks — race effort`,meta:`3 rounds: 1km run at race pace immediately into station. Pro athletes train this way — not full sims. Quality over quantity. Log each split.`},
+      ...stations.map((s,i)=>({
+        label:`Rd ${i+1}: 1km run → ${s.name}`,
+        meta:s.sub?`Run 1km at race pace then: ${s.sub}`:`Run 1km at ${targetIntervalPace(w)}, immediately into station. No rest between run and station. Log split.`,
+        weight:i===3?`${AW.wallBall}kg ball`:i===0?'max effort':i===1?`${sledLoad}kg`:'explosive'
+      })),
+      {label:`Farmer Carry — 4×80m`,meta:`Pro load is 24kg/hand. Build toward it.`,weight:`${farmerLoad}kg each`},
+      {label:`Rowing Erg — 2×500m`,meta:`Strong drive. If no rower: 2×3 min assault bike.`},
+      cooldown()
+    ];
+  } else {
+    // Weeks 13-18: full 8-station simulation
+    const rowSub = hasKit('rowing-erg')?null:'No rower — 4 min assault bike at max effort';
+    const stations=[
+      {name:hasKit('ski-erg')?'SkiErg 1km':'SkiErg substitute', sub:skiSub, w:'max effort'},
+      {name:hasKit('sled')?`Sled Push ${sledLoad}kg 50m`:'Sled substitute', sub:sledSub, w:`${sledLoad}kg`},
+      {name:hasKit('sled')?`Sled Pull 78kg 50m`:'Sled Pull substitute', sub:sledSub, w:'78kg'},
+      {name:'Burpee Broad Jump 80m', sub:null, w:'explosive'},
+      {name:hasKit('rowing-erg')?'Rowing Erg 1km':'Row substitute', sub:rowSub, w:'max effort'},
+      {name:`Farmer Carry 24kg 200m`, sub:null, w:`${farmerLoad}kg each`},
+      {name:`Sandbag Lunge ${sandbagLoad}kg 100m`, sub:null, w:`${sandbagLoad}kg`},
+      {name:`Wall Ball 100 reps`, sub:null, w:`${AW.wallBall}kg`},
+    ];
+    return [
+      {label:`Full Dress Rehearsal — Pro Weights`,meta:`Your ONE full race simulation. Book the Hyrox gym for 2+ hours. Race it properly at full pro weights. Target sub-90 min. Log every split.`},
+      ...stations.map((s,i)=>({
+        label:`Rd ${i+1}: 1km → ${s.name}`,
+        meta:s.sub?`Run 1km at ${targetIntervalPace(w)} then: ${s.sub}`:`Run 1km then station immediately. Log each split. Note your weakest station — that is your next training focus.`,
+        weight:s.w
+      })),
+      {label:`Log total time and weakest station`,meta:`Record total elapsed time. Note the station where you lost most time. That station gets extra practice this week.`}
+    ];
+  }
+}
+
+function stepsB2Thu(w){ // Upper Body — Heavy Push/Pull
+  const lw=w-6;
+  const wBench=nearestBarbellLoad(Math.round(AW.bench*(0.76+(lw-1)*0.012)/2.5)*2.5);
+  const wOhp=nearestBarbellLoad(Math.round(AW.ohp*(0.84+(lw-1)*0.010)/2.5)*2.5);
+  const wRow=nearestDB(Math.min(Math.round(AW.bentRow*(0.75+(lw-1)*0.008)),25));
   return [
     warmup(8),
-    {label:'Round 1: 1km run → 10 wall balls',meta:'1km at controlled pace, immediately into wall balls. Log your transition time.',weight:`9kg ball`},
-    {label:'Round 1: 1km run → 50m sandbag lunge',meta:'Continue straight into second 1km, then sandbag lunge. 2 min rest after full round.',weight:`${AW.sandbagLunge}kg`},
-    {label:'Round 2: 1km run → 10 wall balls',meta:'Try to match or beat Round 1 pace.',weight:'9kg ball'},
-    {label:'Round 2: 1km run → 50m sandbag lunge',meta:'Maintain consistent output. Note where fatigue sets in.',weight:`${AW.sandbagLunge}kg`},
-    {label:'Round 3: 1km run → 10 wall balls',meta:'Third round — this is where mental toughness is built.',weight:'9kg ball'},
-    {label:'Round 3: 1km run → 50m sandbag lunge',meta:'Finish strong. Log total time for all 3 rounds.'},
-    {label:'Round 4: 1km run → 10 wall balls',meta:'Fourth and final round.',weight:'9kg ball'},
-    {label:'Round 4: 1km run → 50m sandbag lunge',meta:'Final round. Log total session time — aim to improve each week.',weight:`${AW.sandbagLunge}kg`},
+    {label:`Bench Press — 4×5`,meta:`Heavy pressing. Spot if available. ${plateBreakdown(wBench)}`,weight:`${wBench}kg`},
+    {label:`Weighted Pull-up — 4×5`,meta:`Add load when 5 reps unweighted is easy. Dead hang, full range.`,weight:lw>6?`BW+${nearestDB(Math.min(5+Math.floor(lw/3),15))}kg`:`BW`},
+    {label:`Barbell OHP — 4×5`,meta:`Strict press. No momentum. ${plateBreakdown(wOhp)}`,weight:`${wOhp}kg`},
+    {label:`DB Row — 4×8 each`,meta:`Heaviest clean reps. Elbow past hip.`,weight:`${wRow}kg DB`},
+    {label:`Weighted Dip — 3×8`,meta:`Full depth. Belt or DB between feet.`,weight:lw>6?`BW+${nearestDB(5+Math.floor(lw/4))}kg`:`BW`},
+    {label:`Barbell Curl — 3×10`,meta:`Strict. No swing.`,weight:`${nearestBarbellLoad(Math.round(AW.curl*2*0.8/2.5)*2.5)}kg`},
+    {label:`Dead Bug — 3×10 each`,meta:`Lower back flat. Slow. Core stability for bracing under sled load.`},
     cooldown()
   ];
 }
-function stepsP2Thu(w){
-  const lw=w-16;
-  const wBench=nearestBarbellLoad(Math.round(AW.bench*(0.76+(lw-1)*0.01)/2.5)*2.5);
-  const wOhp=nearestBarbellLoad(Math.round(AW.ohp*(0.85+(lw-1)*0.008)/2.5)*2.5);
-  const wRow=nearestDB(Math.min(Math.round(AW.bentRow*(0.75+(lw-1)*0.005)),25));
-  const wCurl=nearestDB(Math.min(AW.curl+Math.floor(lw/4),25));
+
+function stepsB2Fri(w){ // Long Run (Block 2) / Run+Strength (Block 3)
+  const lw=w-6;
+  const isBlock3 = lw>=7;
+  if(!isBlock3){
+    // Block 2 Fri: long run
+    const km=Math.min(10+Math.floor(lw*0.8),16);
+    const pace=targetZ2Pace(w);
+    return [
+      {label:`Long Run — ${km}km`,meta:`Zone 2-3. HR 145-160. Find your rhythm and hold it. This is your most important aerobic session of the week.`},
+      {label:`Km 1-${km-3}: steady Z2`,meta:`HR 145-155. Controlled. Do not go out hard.`,weight:`~${pace}`},
+      {label:`Final 3km: build to race pace`,meta:`Gradually increase. Teach the legs to work fast when fatigued.`,weight:`~${targetIntervalPace(w)}`},
+      {label:`Post-run: 10 min stretch`,meta:`Quads, hamstrings, calves, hip flexors. Protein within 30 min.`}
+    ];
+  } else {
+    // Block 3 Fri: run + upper strength — peak loading
+    const wBench=nearestBarbellLoad(Math.round(AW.bench*(0.82+(lw-7)*0.014)/2.5)*2.5);
+    const wOhp=nearestBarbellLoad(Math.round(AW.ohp*(0.90+(lw-7)*0.012)/2.5)*2.5);
+    const km=Math.min(8+Math.floor((lw-7)*0.5),12);
+    return [
+      warmup(8),
+      {label:`Tempo Run — ${km}km`,meta:`Zone 3. HR 155-168. Uncomfortable but sustainable. This pace is your race pace for the run segments.`,weight:`~${targetIntervalPace(w)}`},
+      {label:`Bench Press — 5×3 near max`,meta:`After the run. Legs gone, now push. This is race simulation fatigue loading. ${plateBreakdown(wBench)}`,weight:`${wBench}kg`},
+      {label:`Weighted Pull-up — 5×3`,meta:`Heavy. Full range.`,weight:`BW+${nearestDB(Math.min(5+Math.floor((lw-7)/2),20))}kg`},
+      {label:`Barbell OHP — 4×4`,meta:`Strict. This is hard after a run. Good. ${plateBreakdown(wOhp)}`,weight:`${wOhp}kg`},
+      {label:`Finisher: 3 min continuous burpee broad jump`,meta:`Set timer, go. Log distance. This is your race station — own it.`},
+      cooldown()
+    ];
+  }
+}
+
+function stepsB2Sat(w){ // Post-bootcamp engine session — escalating
+  const lw=w-6;
+  const isBlock3=lw>=7;
+  const wbReps=Math.min(25+lw*3,60);
+  const farmerLoad=nearestDB(Math.min(20+Math.floor(lw/2),24));
+  const sandbagLoad=Math.min(AW.sandbagLunge+Math.floor(lw/3),30);
+  return [
+    {label:'Arrive fatigued — that is the point',meta:'Post-bootcamp fatigue is the training stimulus. Work at 85% effort throughout — not max, not easy.'},
+    {label:`Wall Ball — 4×${wbReps} reps`,meta:`Race strategy is 4×25. Build toward unbroken sets. Rest 30 sec between.`,weight:`${AW.wallBall}kg`},
+    {label:`Farmer Carry — 5×40m`,meta:`Building toward 24kg/hand race load. Short 45-sec rest — this is conditioning.`,weight:`${farmerLoad}kg each`},
+    {label:`Sandbag Lunge — ${isBlock3?3:2}×50m`,meta:'Bear hug. Consistent pace. No stopping mid-set.',weight:`${sandbagLoad}kg`},
+    {label:isBlock3?'SkiErg — 3×500m':'SkiErg or Row — 2×500m',meta:isBlock3?'Race effort. Rest 90 sec. At Hyrox gym.':'Max effort. Log split time.',weight:'race effort'},
+    {label:'Burpee Broad Jump — 3×20m',meta:'Explosive. Note distance per rep — aim for 1.5-2m each.'},
+    isBlock3?{label:'Sled Push — 2×20m at race load',meta:'Full race weight if at gym. Short and sharp. Practice the drive pattern.',weight:'102kg load'}:{label:'Row or Bike — 5 min max effort',meta:'Everything you have left.'}
+  ];
+}
+
+function stepsB2Deload(dayIdx, w){
+  const ph=w<=12?2:3;
+  return [
+    [{label:'Full Rest',meta:'No training. Foam roll. Sleep 9 hrs. You have earned it.'}],
+    [{label:`Easy Run — 5km`,meta:`HR below 130. Walk if needed.`}],
+    [{label:'Easy Bike — 20 min',meta:'Zero effort.'},{label:'Stretch — 15 min',meta:'Full body. 45 sec per position.'}],
+    [{label:`Squat — 3×5 @ 50%`,meta:'Light. Movement quality.',weight:`${sq(0.5)}kg`},{label:'Hip mobility — 10 min',meta:'90/90, couch stretch.'}],
+    [{label:`Easy Run — 6km`,meta:'Conversational. Reflect on the block. Next week is the next step.'}]
+  ][dayIdx] || [{label:'Rest',meta:'Recovery.'}];
+}
+
+// ── BLOCK 4 TAPER SESSIONS (Weeks 19–22) ─────────────────────────
+
+function stepsB4Mon(w){
+  const lw=w-18;
+  const volMult=[1,0.7,0.5,0.3][lw-1]||0.3;
+  const wSq=sq(0.80);
   return [
     warmup(8),
-    {label:`Bench Press — 4×6`,meta:`Heavy pressing. Spot if available. Pause 1 sec at chest each rep. ${plateBreakdown(wBench)}`,weight:`${wBench}kg`},
-    {label:'Weighted Pull-up — 4×5',meta:'Add weight via dumbbell between feet or belt. Dead hang start, full range. If not yet weighted, do 4×max strict.',weight:lw>8?`BW+${nearestDB(5+Math.floor(lw/4))}kg`:'BW'},
-    {label:`Barbell Overhead Press — 4×6`,meta:`From rack. Strict press — no leg drive. Lock out overhead. ${plateBreakdown(wOhp)}`,weight:`${wOhp}kg`},
-    {label:`Dumbbell Row — 4×10 each arm`,meta:'Chest on incline bench. Heavy. Drive elbow behind torso. This is your strongest pulling movement.',weight:`${wRow}kg DB`},
-    {label:'Dips — 3×max or weighted 3×8',meta:'Bodyweight or add weight. Full depth essential. Builds tricep and chest strength for sled push.',weight:lw>10?`BW+${nearestDB(5+Math.floor(lw/5))}kg`:'BW'},
-    {label:`Barbell Curl — 3×10`,meta:'Strict, no swing. Full range. Builds bicep strength needed for rowing and pulling stations.',weight:`${nearestBarbellLoad(Math.round(AW.curl*2*0.8/2.5)*2.5)}kg bar`},
-    {label:'Face Pull / Band External Rotation — 3×20',meta:'Shoulder health — non-negotiable. Light resistance, controlled movement throughout.'},
+    {label:`Back Squat — ${lw<=2?'3×4':'2×3'} — taper load`,meta:`Maintain sharpness. Not building — just keeping fast. ${plateBreakdown(wSq)}`,weight:`${wSq}kg`},
+    {label:`Romanian Deadlift — 2×6`,meta:`Light and fast. Stay sharp without accumulating fatigue.`,weight:`${rdl(0.65)}kg`},
+    lw<=3 ? {label:`Sandbag Lunge — 1×100m`,meta:`Race pace effort. Practice the exact motion you will use on 30 October.`,weight:`${Math.min(AW.sandbagLunge,30)}kg`}
+           : {label:`Sandbag Lunge — 1×50m easy`,meta:`Easy movement. Staying fresh for race day.`,weight:`${AW.sandbagLunge}kg`},
+    {label:`Calf Raise — 2×15`,meta:`Maintenance only.`},
     cooldown()
-  ];
-}
-function stepsP2Fri(w){
-  const lw=w-16;
-  const km=Math.min(10+Math.floor((lw-1)/2),18);
-  return [
-    {label:`Long Run — ${km}km total`,meta:'Zone 2–3. Slightly harder than easy — you should be able to speak but not sing. HR 145–160.'},
-    {label:`Km 1–${km-2}: Steady pace`,meta:'Find your rhythm. Don\'t go out too fast. Check pace every 2km.'},
-    {label:`Final 2km: Build to race pace`,meta:'Pick it up. Finish the run strong. This teaches your legs to work when fatigued — crucial for Hyrox.'},
-    {label:'Post-run stretch — 10 min',meta:'Quads, hamstrings, calves, hip flexors. Hold 45 sec each. Hydrate immediately.'}
   ];
 }
 
-// ─── PHASE 3 SESSION STEPS ───────────────────────────────────────
-function stepsP3Mon(w){
-  const lw=w-36;
-  const wSq=sq(0.82+(lw-1)*0.015);
-  const wDl=dl(0.82+(lw-1)*0.012);
-  const wRdl=rdl(0.75+(lw-1)*0.012);
-  const thrustLoad=nearestBarbellLoad(Math.round(AW.squat1rm*(0.65+(lw-1)*0.015)/2.5)*2.5);
-  const calfLoad=nearestBarbellLoad(Math.min(Math.round(80+(lw-1)*5),130));
-  const maxDB=eqState.dumbbells&&eqState.dumbbells.length?Math.max(...eqState.dumbbells):25;
+function stepsB4Tue(w){
+  const lw=w-18;
+  const reps=[5,4,4,2][lw-1]||2;
+  const pace=targetIntervalPace(19);
+  if(lw===4){
+    // Race week — just 4×400m
+    return [
+      {label:`Warm-up — 10 min easy`,meta:`Legs should feel fresh and bouncy. If heavy, walk more.`},
+      {label:`4×400m @ race pace`,meta:`Target: ${pace}. Full recovery between. Just confirming the legs are sharp. Do not go hard.`,weight:pace},
+      {label:`Cool-down — 10 min easy`,meta:`Last run before the race. Legs up for the rest of the week.`}
+    ];
+  }
   return [
-    warmup(12),
-    {label:`Back Squat — 5×3 (near max)`,meta:`Competition-prep loading. Full 5 min rest between sets — this is non-negotiable at these loads. Spot if available. ${plateBreakdown(wSq)}`,weight:`${wSq}kg`},
-    {label:`Trap Bar Deadlift — 4×3`,meta:`Heavier than conventional. Neutral spine, explosive pull, reset between reps. ${plateBreakdown(wDl)}`,weight:`${wDl}kg`},
-    {label:`Romanian Deadlift — 3×8 (tempo)`,meta:`After the heavy pulls, slow down. 3-sec eccentric, feel the stretch. ${plateBreakdown(wRdl)}`,weight:`${wRdl}kg`},
-    {label:'Sandbag Lunge — 100m continuous',meta:'Full race-distance lunge. No stopping. Log time and aim to beat it each week.',weight:`${Math.min(AW.sandbagLunge+Math.floor(lw/2),25)}kg`},
-    {label:'Barbell Hip Thrust — 4×8 (heavy)',meta:`Drive hips to full extension, 1 sec squeeze at top. This is a max glute strength exercise — load it. ${plateBreakdown(thrustLoad)}`,weight:`${thrustLoad}kg`},
-    {label:'Bulgarian Split Squat — 3×8 each',meta:'Rear foot elevated. Deep lunge — thigh parallel or below. This is where single-leg power is built.',weight:`${nearestDB(Math.min(AW.lunge+lw,maxDB))}kg DBs`},
-    {label:'Lying DB Hamstring Curl — 4×8 (heavy)',meta:'Lie face down, heavy dumbbell between feet. Slow 4-sec eccentric, explosive concentric. Load this progressively — these should be genuinely hard by set 3.',weight:`${nearestDB(Math.min(15+Math.floor(lw/2),25))}kg DB`},
-    {label:`Calf Raise — 5×20 (heavy)`,meta:'Standing or seated with barbell on back. Full range, 2-sec hold at top. High volume protects the achilles under 50km+ run weeks.',weight:`${calfLoad}kg`},
-    {label:'Copenhagen Hip Adduction — 3×10 each',meta:'Side plank with top foot on bench, bottom leg lifted. Groin and adductor strength — prevents the groin strain that sidelines distance runners. Often neglected.'},
-    cooldown()
-  ];
-}
-function stepsP3Tue(w){
-  const lw=w-36;
-  const paceS=Math.max(240-lw*3,195);
-  const paceStr=`${Math.floor(paceS/60)}:${String(paceS%60).padStart(2,'0')}/km`;
-  return [
-    {label:'Warm-up — 2km easy + 4 strides',meta:'Build to race pace gradually. These sessions are brutal — do not skip the warm-up.'},
-    {label:'VO2max Interval 1 — 3 min',meta:`95% effort. HR should hit 90%+ max by end. Target pace: ~${paceStr}. 3 min easy jog recovery.`},
-    {label:'VO2max Interval 2 — 3 min',meta:`Same effort. Do not slow down from interval 1.`,weight:`~${paceStr}`},
-    {label:'VO2max Interval 3 — 3 min',meta:'If you\'re not suffering, you\'re not going hard enough. 3 min jog recovery.'},
-    {label:'VO2max Interval 4 — 3 min',meta:'Hold form: tall posture, fast cadence, arms driving.'},
-    {label:'VO2max Interval 5 — 3 min',meta:'Final interval. Everything you have left.'},
-    {label:'Cool-down — 2km easy',meta:'Do not skip this. Jog slowly. Let HR fall below 130 before stopping. Stretch immediately.'}
-  ];
-}
-function stepsP3Wed(w){
-  const lw=w-36;
-  const skiSub=getSubstitution('ski-erg');
-  const sledPushSub=getSubstitution('sled');
-  const rowSub=getSubstitution('rowing-erg');
-  const stations=[
-    {name: hasKit('ski-erg')?'SkiErg 1km':'SkiErg 1km (substitute below)', sub: skiSub},
-    {name: hasKit('sled')?'Sled Push 50m':'Sled Push 50m (substitute below)', sub: sledPushSub},
-    {name: hasKit('sled')?'Sled Pull 50m':'Sled Pull 50m (substitute below)', sub: sledPushSub},
-    {name:'Burpee Broad Jump 50m', sub:null},
-    {name: hasKit('rowing-erg')?'Rowing Erg 1km':'Rowing 1km (substitute below)', sub: rowSub},
-    {name:'Farmer Carry 200m', sub:null},
-    {name:'Sandbag Lunge 100m', sub:null},
-    {name:'Wall Ball 100 reps', sub:null},
-  ];
-  return [
-    {label:'Full Hyrox Simulation — 8 rounds',meta:'This IS your race rehearsal. Set up all stations in sequence. Aim for sub-70 min total initially.'},
-    ...stations.map((s,i)=>({
-      label:`Round ${i+1}: 1km Run + ${s.name}`,
-      meta: s.sub
-        ? `Run 1km at target race pace, then: ${s.sub}`
-        : `Run 1km at target race pace, then complete station. Log split time.`,
-      weight: i===6?`${Math.min(AW.sandbagLunge+lw,25)}kg`:i===5?`${Math.min(AW.farmerCarry+lw,25)}kg each`:i===7?`${AW.wallBall}kg`:'station standard'
+    {label:`Warm-up — 1km easy + strides`,meta:`Build into it carefully. Legs should feel good on taper.`},
+    ...Array.from({length:reps},(_,i)=>({
+      label:`Interval ${i+1} — 1km`,
+      meta:`Race pace: ${pace}. Full 2 min recovery. Sharpening, not building. Log actual pace.`,
+      weight:pace
     })),
-    {label:'Log total time + weakest station',meta:'Note where time was lost. That station becomes the focus for the next training block.'}
+    {label:`Cool-down — 1km easy`,meta:`You should feel strong on taper intervals. If not, rest more.`}
   ];
 }
-function stepsP3Thu(w){
-  const lw=w-36;
-  const km=Math.min(20+Math.floor(lw*0.5),25);
+
+function stepsB4Wed(w){
+  const lw=w-18;
+  if(lw>=3){
+    // Week 21-22: station technique only, no full sim
+    return [
+      warmup(6),
+      {label:`Wall Ball technique — 3×20 reps`,meta:`Practice 3m target height. Focus on rhythm, not speed. Clean reps.`,weight:`${AW.wallBall}kg`},
+      {label:`Farmer Carry — 3×40m`,meta:`24kg/hand. Fast walk. Stay loose.`,weight:`${nearestDB(24)}kg each`},
+      {label:`SkiErg or substitute — 2×500m easy`,meta:`Technique only. Pull from lats. Tall posture. Stay calm.`},
+      {label:`2×400m run @ race pace`,meta:`Confirm the legs are ready. Log pace.`,weight:`~${targetIntervalPace(19)}`},
+      cooldown()
+    ];
+  }
+  // Weeks 19-20: short sim
+  const sandbagLoad=Math.min(AW.sandbagLunge,30);
   return [
-    {label:`Long Run — ${km}km`,meta:'Zone 2–3 sustained. This is the backbone of your sub-60 development. Non-negotiable.'},
-    {label:`Km 1–${km-7}: Steady Zone 2–3`,meta:'HR 145–165. Control. Do not go into Zone 4 — this defeats the purpose.'},
-    {label:`Km ${km-6}–${km-1}: Build effort`,meta:'Gradually increase pace. HR may creep to Zone 4 — acceptable in final kms.'},
-    {label:`Final 1km: Race pace effort`,meta:'Finish strong. This is your mental bank deposit for race day.'},
-    {label:'Post-run nutrition window — 30 min',meta:'Consume protein + carbs within 30 min of finishing. This directly impacts recovery quality.'}
-  ];
-}
-function stepsP3Fri(w){
-  const lw=w-36;
-  const wBench=nearestBarbellLoad(Math.round(AW.bench*(0.82+(lw-1)*0.012)/2.5)*2.5);
-  const wOhp=nearestBarbellLoad(Math.round(AW.ohp*(0.90+(lw-1)*0.01)/2.5)*2.5);
-  const wRow=nearestDB(Math.min(Math.round(AW.bentRow*(0.80+(lw-1)*0.006)),25));
-  return [
-    warmup(10),
-    {label:'Bench Press — 5×4 (near max)',meta:`Competition-level pressing. 4 min rest between sets. Record every rep. ${plateBreakdown(wBench)}`,weight:`${wBench}kg`},
-    {label:'Weighted Pull-up — 5×4',meta:'Heavy. Dead hang to chin over bar. Full range every rep. Bank this strength — it transfers to every pulling station.',weight:`BW+${nearestDB(Math.min(5+Math.floor(lw/3),20))}kg`},
-    {label:`Barbell Overhead Press — 4×5`,meta:`Strict. No momentum. This is your vertical pressing max. ${plateBreakdown(wOhp)}`,weight:`${wOhp}kg`},
-    {label:`DB Row — 4×8 each arm`,meta:'Heaviest you can hold for clean reps. No rotation. Elbow drives back past hip.',weight:`${wRow}kg DB`},
-    {label:'Weighted Dip — 4×6',meta:'Belt or DB between feet. Full depth. Chest slightly forward. Brutal for triceps and anterior shoulder.',weight:`BW+${nearestDB(Math.min(5+Math.floor(lw/3),20))}kg`},
-    {label:'Barbell Curl — 3×8 + Hammer Curl — 3×10',meta:'Barbell strict curl then switch to neutral-grip DB hammer curl. Builds both heads of bicep.',weight:`${nearestBarbellLoad(Math.round(AW.curl*2*0.85/2.5)*2.5)}kg / ${nearestDB(Math.min(AW.curl+Math.floor(lw/3),25))}kg each`},
-    {label:'Ab Wheel or Hanging Leg Raise — 4×12',meta:'Full extension on ab wheel, or dead hang and raise legs to 90°. Core strength transfers directly to bracing under load.'},
+    {label:`Short Sim — 4 stations at race pace`,meta:`4 rounds only. Fresh effort. This is race sharpening, not building.`},
+    {label:`Rd 1: 1km run → SkiErg 500m`,meta:`Run at race pace. SkiErg at race effort. Log split.`,weight:`race effort`},
+    {label:`Rd 2: 1km run → Sled Push`,meta:`Full race-weight sled if available. Drive hard.`,weight:`102kg load`},
+    {label:`Rd 3: 1km run → Wall Ball 25 reps`,meta:`This is your race set size. 25 unbroken. Rest 20 sec then continue.`,weight:`${AW.wallBall}kg`},
+    {label:`Rd 4: 1km run → Farmer Carry 100m`,meta:`24kg/hand. Strong finish.`,weight:`${nearestDB(24)}kg each`},
     cooldown()
   ];
 }
 
-function stepsDeload(dayIdx, ph){
-  const plans=[
-    [{label:'Full Rest',meta:'No training. Foam roll 15 min if desired. Sleep 8+ hrs tonight. This is part of the programme.'}],
-    [{label:`Easy Run — ${ph===3?6:ph===2?5:4}km`,meta:'Very easy. HR below 135. Run by feel, no data pressure.'},{label:'Mobility — 10 min',meta:'Hip flexors, calves, thoracic rotation.'}],
-    [{label:'Active Recovery — 20 min bike',meta:'Easy resistance, just moving.'},{label:'Stretch — 15 min',meta:'Full body. Hold 45 sec per position.'}],
-    [{label:`Squat — 3×5 @ 50%`,meta:'Light and controlled. Movement quality focus.',weight:`${sq(0.5)}kg`},{label:'Hip mobility — 10 min',meta:'90/90, couch stretch, pigeon.'}],
-    [{label:`Easy Run — ${ph===3?8:ph===2?8:5}km`,meta:'Conversational pace. Reflect on the block completed.'}]
+function stepsB4Thu(w){
+  const lw=w-18;
+  if(lw>=3) return [{label:'Rest / Easy Walk',meta:'Race is in 2-4 days. Nothing heroic. Legs up.'}];
+  const wBench=nearestBarbellLoad(Math.round(AW.bench*0.78/2.5)*2.5);
+  return [
+    warmup(7),
+    {label:`Bench Press — 3×4`,meta:`Maintenance load. Feel strong, stop there. ${plateBreakdown(wBench)}`,weight:`${wBench}kg`},
+    {label:`Pull-ups — 3×5`,meta:`Sharp and crisp. No grinding.`},
+    {label:`OHP — 2×5`,meta:`Maintenance. ${plateBreakdown(nearestBarbellLoad(Math.round(AW.ohp*0.82/2.5)*2.5))}`,weight:`${nearestBarbellLoad(Math.round(AW.ohp*0.82/2.5)*2.5)}kg`},
+    {label:`Face Pull — 2×20`,meta:'Shoulder health maintenance.'},
+    cooldown()
   ];
-  return plans[dayIdx] || [{label:'Rest',meta:'Recovery day.'}];
 }
 
-// ─── BUILD PHASE DATA ─────────────────────────────────────────────
+function stepsB4Fri(w){
+  const lw=w-18;
+  if(lw===4){
+    return [
+      {label:`RACE DAY — Birmingham Hyrox Pro Singles`,meta:`Today is what the 22 weeks were for. Start controlled — first 2 stations set the tone. Run your own race. Target: 75 minutes.`},
+      {label:`Race warm-up — 10 min easy jog`,meta:`Arrive 90 min early. Walk the course first. 10 min easy jog 45 min before start. 4×100m strides 20 min before start.`},
+      {label:`Km 1-2 run: controlled start`,meta:`Target 4:35/km. Do not go with the fast pack. Save it for station 5 onwards.`},
+      {label:`SkiErg 1km → Sled Push 50m → Sled Pull 50m`,meta:`Stations 1-3. Ski erg: full drive from lats. Sled push: low hips, drive from legs. Sled pull: hand-over-hand, controlled.`},
+      {label:`Burpee Broad Jump 80m → Row 1km`,meta:`Stations 4-5. Burpees: explode forward each rep, consistent distance. Row: 1:55-2:00 split, legs-back-arms.`},
+      {label:`Farmer Carry 200m → Sandbag Lunge 100m`,meta:`Stations 6-7. Carry: shoulders back, fast walk. Sandbag: bear hug, long stride, DO NOT stop.`},
+      {label:`Wall Ball 100 reps → Finish`,meta:`Station 8. Strategy: 4×25 reps with 20 sec rest. Unbroken if feeling good. Dig in. 75 minutes is yours.`}
+    ];
+  }
+  // Weeks 19-21: easy session or rest
+  const actions=[
+    [{label:`Easy Run — 5km`,meta:`Zone 1-2 only. HR below 135. Just moving.`}],
+    [{label:`Rest`,meta:`Complete rest. Race week starts Monday.`}],
+    [{label:`Rest`,meta:`Race tomorrow. Legs up all day. Light stretching only. Sleep early.`}]
+  ];
+  return actions[lw-1]||[{label:'Rest',meta:'Recovery.'}];
+}
+
+// ── BUILD PHASE DATA ─────────────────────────────────────────────
 function buildDays1(w){
-  const isD=w%4===0;
+  const isD=w===7;
   const dayCfg=[
-    {day:'Mon',type:'strength',label:'Strength',focus:'Lower Body Power',mins:60},
-    {day:'Tue',type:'run',label:'Run',focus:'Zone 2 Easy Run',mins:Math.min(35+w*2,65)},
-    {day:'Wed',type:'hybrid',label:'Hybrid',focus:'Hyrox Station Intro',mins:50},
-    {day:'Thu',type:'strength',label:'Strength',focus:'Upper Body + Core',mins:50},
-    {day:'Fri',type:'hybrid',label:'Hybrid',focus:'Run → Station Transitions',mins:55}
+    {day:'Mon',type:'strength',label:'Strength',focus:'Lower Body — Foundation',mins:60},
+    {day:'Tue',type:'run',label:'Run',focus:'Zone 2 Base Run',mins:Math.min(40+w*4,65)},
+    {day:'Wed',type:'hyrox',label:'Hyrox',focus:'Station Practice',mins:60},
+    {day:'Thu',type:'strength',label:'Strength',focus:'Upper Body Strength',mins:60},
+    {day:'Fri',type:'hybrid',label:'Hybrid',focus:'Run + Station Transitions',mins:55}
   ];
-  const stepFns=[stepsP1Mon,stepsP1Tue,stepsP1Wed,stepsP1Thu,stepsP1Fri];
+  const stepFns=[stepsB1Mon,stepsB1Tue,stepsB1Wed,stepsB1Thu,stepsB1Fri];
   return dayCfg.map((d,i)=>({
     ...d,
-    steps: isD ? stepsP1Deload(w,i) : stepFns[i](w),
-    isDeload: isD
+    steps:isD?stepsB1Deload(i):stepFns[i](w),
+    isDeload:isD
   }));
 }
 
 function buildDays2(w){
-  const lw=w-16; const isD=lw%4===0;
+  const lw=w-7;
+  const isD=(lw===3||lw===6||lw===9||lw===12);
   const dayCfg=[
     {day:'Mon',type:'strength',label:'Strength',focus:'Heavy Lower — Race Loads',mins:65},
-    {day:'Tue',type:'run',label:'Run',focus:'Race-Pace Intervals',mins:55},
-    {day:'Wed',type:'hyrox',label:'Hyrox',focus:'Mini Race Simulation',mins:70},
-    {day:'Thu',type:'strength',label:'Strength',focus:'Upper + Posterior Chain',mins:60},
-    {day:'Fri',type:'run',label:'Run',focus:`Long Run ${Math.min(10+Math.floor((lw-1)/2),18)}km`,mins:Math.min(70+(lw-1)*3,110)}
+    {day:'Tue',type:'run',label:'Run',focus:'Race-Pace Intervals',mins:60},
+    {day:'Wed',type:'hyrox',label:'Hyrox',focus:lw===10?'Dress Rehearsal — Full Sim':'Station Blocks — Race Effort',mins:lw===10?110:70},
+    {day:'Thu',type:'rest',label:'Football',focus:'5-a-side Football (if playing)',mins:60,
+      steps:[{label:'5-a-side Football',meta:'Legitimate training load. Agility, lactate tolerance, competition. If cancelled — do upper body strength.'},{label:'Upper Body (if no football)',meta:'Do the Thu strength session.'}]},
+    {day:'Fri',type:lw>=7?'hybrid':'run',label:lw>=7?'Hybrid':'Run',
+      focus:lw>=7?'Tempo Run + Upper Strength':`Long Run ${Math.min(10+Math.floor(lw*0.8),16)}km`,
+      mins:lw>=7?75:Math.min(70+lw*5,100)},
+    {day:'Sat',type:'hyrox',label:'Engine',focus:'Post-Bootcamp HYROX Engine',mins:45}
   ];
-  const stepFns=[stepsP2Mon,stepsP2Tue,stepsP2Wed,stepsP2Thu,stepsP2Fri];
+  const stepFns=[stepsB2Mon,stepsB2Tue,stepsB2Wed,stepsB2Thu,stepsB2Fri,stepsB2Sat];
   return dayCfg.map((d,i)=>({
     ...d,
-    steps: isD ? stepsDeload(i,2) : stepFns[i](w),
-    isDeload: isD
+    steps: d.steps ? d.steps : (isD ? stepsB2Deload(i,w) : stepFns[i] ? stepFns[i](w) : []),
+    isDeload:isD
   }));
 }
 
 function buildDays3(w){
-  const lw=w-36; const isD=lw%3===0;
+  const lw=w-19;
+  const isRaceDay=lw===4;
   const dayCfg=[
-    {day:'Mon',type:'strength',label:'Strength',focus:'Max Strength — Competition Loads',mins:75},
-    {day:'Tue',type:'run',label:'Run',focus:'VO2max Intervals',mins:65},
-    {day:'Wed',type:'hyrox',label:'Hyrox',focus:'Full Race Simulation',mins:90},
-    {day:'Thu',type:'run',label:'Run',focus:`Long Run ${Math.min(20+Math.floor((w-36)*0.5),25)}km`,mins:Math.min(120+(w-36)*4,155)},
-    {day:'Fri',type:'strength',label:'Strength',focus:'Upper Body Power + Core',mins:70}
+    {day:'Mon',type:'strength',label:'Strength',focus:lw>=3?'Taper — Lower Body':'Taper Lower',mins:lw>=3?35:50},
+    {day:'Tue',type:'run',label:'Run',focus:lw===4?'Race Day Warm-up':'Sharpening Intervals',mins:lw===4?20:45},
+    {day:'Wed',type:lw>=3?'rest':'hyrox',label:lw>=3?'Hyrox':'Hyrox',
+      focus:lw>=3?'Station Technique':'Short Race Sim',mins:lw>=3?35:55},
+    {day:'Thu',type:'rest',label:lw>=3?'Rest':'Strength',focus:lw>=3?'Rest — Legs Up':'Taper Upper',mins:lw>=3?0:45},
+    {day:'Fri',type:lw===4?'hyrox':'run',label:lw===4?'RACE DAY':'Run',
+      focus:lw===4?'🏁 BIRMINGHAM HYROX — PRO SINGLES':lw===3?'Rest':'Easy Run',
+      mins:lw===4?90:lw===3?0:30}
   ];
-  const stepFns=[stepsP3Mon,stepsP3Tue,stepsP3Wed,stepsP3Thu,stepsP3Fri];
+  const stepFns=[stepsB4Mon,stepsB4Tue,stepsB4Wed,stepsB4Thu,stepsB4Fri];
   return dayCfg.map((d,i)=>({
     ...d,
-    steps: isD ? stepsDeload(i,3) : stepFns[i](w),
-    isDeload: isD
+    steps:stepFns[i](w),
+    isDeload:lw<=3
   }));
+}
+
+
+function buildDaysHoliday(w){
+  // Holiday week — 2 optional easy runs, full rest otherwise
+  return [
+    {day:'Mon',type:'rest',label:'Rest',focus:'Holiday — Full Rest',mins:0,
+      steps:[{label:'Full Rest',meta:'You are on holiday. No training today. Sleep, eat well, walk around — that is it.'}]},
+    {day:'Tue',type:'run',label:'Run',focus:'Optional Easy Run — 20-30 min',mins:30,
+      steps:[
+        {label:'Optional Easy Run — 20-30 min',meta:'Only if you feel like it. HR below 130. Sightseeing pace. This is not a training run — it is just moving. Skip it without guilt if you would rather not.',weight:'very easy'},
+        {label:'Alternative: walk 45-60 min',meta:'A long walk counts. Keeps the legs moving without any training stress.'}
+      ]},
+    {day:'Wed',type:'rest',label:'Rest',focus:'Holiday — Full Rest',mins:0,
+      steps:[{label:'Full Rest',meta:'Rest. Recover. You will come back to Block 1 fresher for it.'}]},
+    {day:'Thu',type:'rest',label:'Rest',focus:'Holiday — Full Rest',mins:0,
+      steps:[{label:'Full Rest',meta:'If you normally play football, enjoy the break from that too.'}]},
+    {day:'Fri',type:'run',label:'Run',focus:'Optional Easy Run — 20-30 min',mins:30,
+      steps:[
+        {label:'Optional Easy Run — 20-30 min',meta:'Second optional run of the week. Easy. Conversational. No data pressure — just enjoy it.',weight:'very easy'}
+      ]},
+    {day:'Sat',type:'rest',label:'Rest',focus:'Holiday — Full Rest',mins:0,
+      steps:[{label:'Full Rest',meta:'No bootcamp, no engine session. Rest.'}]}
+  ];
 }
 
 function buildPhase(s,e,fn){
   const ws=[];
-  for(let w=s;w<=e;w++) ws.push({week:w,isDeload:(s===1?w%4===0:s===17?(w-16)%4===0:(w-36)%3===0),days:fn(w)});
+  for(let w=s;w<=e;w++) ws.push({week:w,days:fn(w),isDeload:fn(w).some?false:false});
   return ws;
 }
-const P1=buildPhase(1,16,buildDays1);
-const P2=buildPhase(17,36,buildDays2);
-const P3=buildPhase(37,48,buildDays3);
-const ALL=[P1,P2,P3];
+const P_HOLIDAY=buildPhase(1,1,buildDaysHoliday);
+const P1=buildPhase(2,7,buildDays1);
+const P2=buildPhase(8,19,buildDays2);
+const P3=buildPhase(20,23,buildDays3);
+const ALL=[P_HOLIDAY,P1,P2,P3];
 
 function totalSessions(){ let t=0; ALL.forEach(p=>p.forEach(w=>t+=w.days.filter(d=>d.type!=='rest').length)); return t; }
 function completedCount(){ return Object.keys(done).length; }
@@ -1583,40 +1751,45 @@ function updateProgress(){
 
 // ─── META ─────────────────────────────────────────────────────────
 const PH_META=[
-  {tag:'Phase 01 · Weeks 1–16 · Foundation',name:'Build the Base',
-   desc:'Strong aerobic foundation (RHR 50) but low running volume. This phase builds weekly mileage, introduces all 8 Hyrox stations, and gets you ready for a Mixed Doubles debut. Starting weights are personalised from your current numbers and progress weekly.',
-   meta:[['Duration','16 weeks'],['Sessions','5/wk · 6–9 hrs'],['Deload','Every 4th week'],['Target','Mixed Doubles debut'],['5K Goal','~21:30']]},
-  {tag:'Phase 02 · Weeks 17–36 · Race Ready',name:'Sharpen the Weapon',
-   desc:'Engine built — now race it. Race-pace intervals, heavier station loads, and structured Hyrox simulations. Target a competitive Doubles result, then your solo debut. 5K should break 20 min in this phase.',
-   meta:[['Duration','20 weeks'],['Sessions','5/wk · 8–11 hrs'],['Deload','Every 4th week'],['Target','Competitive doubles + solo debut'],['5K Goal','~19:45']]},
-  {tag:'Phase 03 · Weeks 37–104 · Sub-60',name:'Go Sub‑60',
-   desc:'The long game. Sub-60 requires ~17 min 5K capability, sustained functional strength, and sharp race execution. Periodised in 12-week blocks with two A-races per year.',
-   meta:[['Duration','68 weeks (~16 months)'],['Sessions','5–6/wk · 10–14 hrs'],['Deload','Every 3rd week'],['Target','Sub-60 solo Hyrox'],['5K Goal','Sub-17:30']]}
+  {tag:'Week 1 · Holiday Recovery',name:'Holiday Week',
+   desc:'You are on holiday — this is intentional rest before 22 weeks of focused training. Two optional easy runs if you feel like it. No stations, no strength, no targets. Come back to Block 1 fresh.',
+   meta:[['Duration','1 week'],['Training','Optional runs only'],['Goal','Rest and recover'],['Starts','Block 1 from Week 2']]},
+  {tag:'Block 01 · Weeks 2–7 · Engine Build',name:'Build the Engine',
+   desc:'Block 1 builds your aerobic base from 20 to 35km/week, introduces all 8 stations at building loads, and locks in technique before the intensity ramps. Sled and ski erg must be trained at a Hyrox gym weekly — book it now.',
+   meta:[['Duration','6 weeks'],['Sessions','6/wk incl Sat engine'],['Deload','Week 7'],['5K Goal','sub-23:00'],['Station Goal','All 8 at building loads']]},
+  {tag:'Blocks 02–03 · Weeks 8–19 · Race Sharp',name:'Race-Specific Loading',
+   desc:'Station blocks replace full simulations — 3 rounds of 1km run + 1 station at race effort. One full dress rehearsal at week 17. Interval pace builds from 4:50 to 4:15/km. Saturday engine sessions escalate throughout.',
+   meta:[['Duration','12 weeks'],['Sessions','6/wk'],['Deload','Wks 10, 13, 16'],['5K Goal','sub-20:30'],['Dress Rehearsal','Week 17 at Hyrox gym']]},
+  {tag:'Block 04 · Weeks 20–23 · Taper',name:'Peak & Race Day',
+   desc:'Volume drops 40-70% over 4 weeks while sharpness is maintained. Race week is week 23. Monday easy jog, Wednesday 4×400m, rest Thursday, race Friday 30 October. Target: 75 minutes.',
+   meta:[['Duration','4 weeks'],['Sessions','3–5/wk reducing'],['Race','Fri 30 Oct 2026'],['Target','75 min pro singles'],['Strategy','4:30/km runs · station splits planned']]}
 ];
 
 const BM_DATA=[
-  [{v:'21:30',l:'5K Target'},{v:'25km',l:'Weekly Run Vol'},{v:'9kg',l:'Wall Ball 24 reps'},{v:'20kg',l:'Sandbag 50m'}],
-  [{v:'19:45',l:'5K Target'},{v:'40km',l:'Weekly Run Vol'},{v:'65 min',l:'Solo Race Target'},{v:'100kg',l:'Sled Push'}],
-  [{v:'&lt;17:30',l:'5K Standalone'},{v:'50km+',l:'Weekly Run Vol'},{v:'3:45/km',l:'Race Pace'},{v:'150kg+',l:'Sled Push'}]
+  [{v:'sub-23:00',l:'5K Target'},{v:'35km',l:'Weekly Run Vol'},{v:'All 8',l:'Stations at load'},{v:'Week 6',l:'Deload'}],
+  [{v:'sub-20:30',l:'5K Target'},{v:'45km',l:'Weekly Run Vol'},{v:'sub-90',l:'Dress Rehearsal'},{v:'Wk 16',l:'Full Sim'}],
+  [{v:'75 min',l:'Race Target'},{v:'30 Oct',l:'Birmingham'},{v:'4:30/km',l:'Run Pace'},{v:'Pro',l:'Wave'}]
 ];
 
 const PH_NOTES=[
-  ['All Phase 1 runs should be Zone 2 — fully conversational, HR below 145bpm. Aerobic base is the most valuable thing you can build right now.',
-   'Starting squat weight is set at ~72% of your 1RM (86kg) and progresses ~1–2% per week. RDL starts at ~68% (~82kg). These are conservative to allow running adaptation alongside lifting.',
-   'You don\'t have a ski erg or sled — book a Hyrox gym monthly for these two stations. Sled technique is race-day critical and cannot be learned on race morning.',
-   'Your wife is a capable Hyrox athlete. Train together on Hybrid/Hyrox days — she paces runs, you absorb the heavier station loads.',
-   'In Mixed Doubles, both athletes complete all stations. Your 90kg makes sled push harder — front-loading leg volume is intentional.',
-   'Deload weeks (4, 8, 12, 16) drop volume ~40%. Never skip them.'],
-  ['Race-pace intervals on Tuesday are your most important running session. The pace target progresses from ~4:45/km toward ~4:20/km by end of phase.',
-   'Squat loading progresses from ~75% toward ~85% of 1RM across this phase (90kg→102kg). Deadlift follows similar progression.',
-   'Station efficiency matters more than raw strength — practice the run→station transition. It loses more time than most people expect.',
-   'For Doubles strategy: you likely own sled push/pull and burpee broad jump based on weight advantage. Discuss with your wife.',
-   'A slow cut toward 14–15% BF will meaningfully improve run economy. Target ~0.5kg/week without compromising training quality.'],
-  ['80% of all running must remain Zone 2 even at this level. High-volume easy running produces the aerobic ceiling sub-60 demands.',
-   'VO2max sessions sit on top of a massive easy base — never attempt them fatigued. Check HRV before each Tuesday session.',
-   'Sub-60 requires ~7:30/km average across all 8km of running inside the race, with full stations between each km. Marginal gains everywhere.',
-   'Your RHR of 50 already signals a strong aerobic base. Expect it to drop toward 42–46bpm at peak fitness — monitor this as a progress marker.',
-   'If not running 50+km/week consistently by week 60, recalibrate the timeline. Running volume is the most honest readiness indicator.']
+  ['Pro men station weights: SkiErg 1km, Sled Push 102kg+sled, Sled Pull 78kg, Burpee Broad Jump 80m, Row 1km, Farmer Carry 24kg/hand, Sandbag Lunge 100m at 30kg, Wall Ball 100 reps at 9kg to 3m target.',
+   'BOOK A HYROX GYM NOW — you need weekly sled and ski erg access for 22 weeks. Sled technique alone can save or cost you 8-10 minutes on race day.',
+   'Your biggest limiter is running. 24:40 needs to come down to 20:30 by race day. Four disciplined running sessions per week throughout this block.',
+   'Zone 2 running is 80% of all volume. HR below 145. Fully conversational. This is boring. Do it anyway.',
+   'At 90kg you are heavy for pro singles. Cutting to 84-86kg over 22 weeks is realistic and will meaningfully improve run economy.',
+   'Deload is week 6. Take it.'],
+  ['Block 2 Wks 7-12: race-pace intervals build from 4:50/km to 4:30/km. These are the most important sessions in the programme.',
+   'Block 3 Wks 13-18: full Hyrox simulations every Wednesday at pro station weights. First sim will be brutal — that is useful data.',
+   'Sled push at 102kg is not a strength problem — it is technique and breathing. Drive from hips not shoulders. Practice weekly.',
+   'Run-to-station transitions cost most first-timers 30-45 sec per station. Stop running, hit the station, control breathing in 3 steps.',
+   'Wall balls 100 reps: race strategy is 4x25 with 20 sec rest. Practice this in training, not for the first time on race day.',
+   'Deload weeks at 9, 12 and 15 are mandatory. Accumulated fatigue at this intensity causes injury.'],
+  ['Week 19: volume drops 40%. Keep 2 interval sessions and 1 short sim. Cut all long runs and heavy strength.',
+   'Week 20: finalise race strategy — target split per station, run pace between stations, sled breathing cues.',
+   'Week 21: 3 sessions only. One short interval, one station technique, one easy run. Nothing heroic.',
+   'Race week: Monday easy 20 min jog, Wednesday 4x400m at race pace, rest Thursday, race Friday 30 October.',
+   'Birmingham morning: arrive 90 min early, walk the course, 10 min warm-up jog. Do not sprint km 1.',
+   'Target splits for 75 min: 8km running 36 min at 4:30/km avg, SkiErg 4:30, Sled Push 3:30, Sled Pull 3:00, Burpees 5:00, Row 4:15, Farmer Carry 2:30, Sandbag 5:30, Wall Balls 6:00.']
 ];
 
 // ─── RENDER ───────────────────────────────────────────────────────
@@ -1625,7 +1798,7 @@ let currentPhase=1;
 const CUR_W_SK='hyrox_curW_v1';
 function loadCurW(){ try{ return JSON.parse(localStorage.getItem(CUR_W_SK)||'null'); }catch(e){ return null; } }
 function saveCurW(){ try{ localStorage.setItem(CUR_W_SK,JSON.stringify(curW)); }catch(e){} }
-let curW=loadCurW()||{1:1,2:17,3:37};
+let curW=loadCurW()||{1:1,2:8,3:20};
 
 function renderPhase(ph){
   const pi=ph-1;
@@ -1682,11 +1855,12 @@ function renderWeekBody(ph,wNum){
   h+='<div class="week-grid">';
   week.days.forEach((day,i)=>{
     const tk=isDone(wNum,i);
+    const sk=skipReason(wNum,i);
     const gt=GARMIN[day.type]||GARMIN.rest;
     const pct=Math.round((day.mins/120)*100);
     const stepsCount=day.steps?day.steps.length:0;
     const stepsCompleted=day.steps?day.steps.filter((_,si)=>isStepDone(wNum,i,si)).length:0;
-    h+=`<div class="day-card${tk?' completed':''}" id="card-${wNum}-${i}">
+    h+=`<div class="day-card${tk?' completed':sk?' skipped':''}" id="card-${wNum}-${i}">
       <div class="day-hdr">
         <div class="day-left">
           <div class="day-name">${day.day}</div>
@@ -1705,6 +1879,7 @@ function renderWeekBody(ph,wNum){
         <div class="card-actions">
           <button class="start-btn" onclick="openSession(${ph},${wNum},${i})">${tk?'▶ Redo Session':'▶ Start Session'}</button>
           <button class="strava-btn" onclick="openStrava(${ph},${wNum},${i})">🟠 Strava</button>
+          <button class="skip-btn${sk?' skipped':''}" onclick="openSkipModal(${ph},${wNum},${i})">${sk?'⚠ '+sk:'Skip'}</button>
         </div>`:''}
       </div>
     </div>`;
@@ -1824,43 +1999,46 @@ document.addEventListener('visibilitychange', ()=>{
   if(!document.hidden && timerRunning) updateTimerDisplay();
 });
 
+// sessCtx MUST be declared before resumePersistedSession runs
+let sessCtx = {ph:1, wNum:1, dayIdx:0, day:null};
+
 // On load — check if a session was in progress when the app was killed
-(function resumePersistedSession(){
+// Called explicitly after full init so ALL and render functions exist
+function resumePersistedSession(){
   try{
     const saved = JSON.parse(localStorage.getItem(TIMER_SK)||'null');
     if(!saved || !saved.sessCtxKey) return;
     const [ph,wNum,dayIdx] = saved.sessCtxKey.split('_').map(Number);
     const pData = ALL[ph-1];
     if(!pData) return;
-    const week = pData.find(w=>w.week===wNum);
+    const week = pData.find(wk=>wk.week===wNum);
     if(!week) return;
     const day = week.days[dayIdx];
     if(!day) return;
-    // Restore timer state
+    // Restore banked elapsed + account for any offline gap
     timerElapsedMs  = saved.elapsedMs || 0;
     timerStartEpoch = saved.startEpoch || 0;
-    timerRunning    = false; // will re-start below if was running
-    // Re-open the session overlay with restored context
+    timerRunning    = false;
+    if(saved.running && saved.startEpoch){
+      timerElapsedMs += Math.max(0, Date.now() - saved.startEpoch);
+    }
+    // Restore session context and reopen overlay
     sessCtx = {ph, wNum, dayIdx, day};
-    document.getElementById('sess-day-label').textContent = `${day.day} · Phase ${ph} · Week ${wNum}`;
+    document.getElementById('sess-day-label').textContent = `${day.day} · Week ${wNum}`;
     document.getElementById('sess-title').textContent     = day.focus;
     const gt = GARMIN[day.type]||GARMIN.rest;
     document.getElementById('sess-garmin-text').textContent = gt[0];
     renderSessionSteps();
     document.getElementById('sessionOverlay').classList.add('open');
-    // If timer was running when app was killed, add the offline gap and resume
-    if(saved.running){
-      const offlineGap = Date.now() - saved.startEpoch;
-      timerElapsedMs  += offlineGap; // account for time spent killed
-      startTimer();
-    } else {
-      updateTimerDisplay();
-    }
-  }catch(e){}
-})();
+    updateTimerDisplay();
+    const btn = document.getElementById('timer-btn');
+    const disp = document.getElementById('sess-timer');
+    if(btn)  btn.textContent = '▶ Resume';
+    if(disp) disp.className  = 'sess-timer paused';
+  }catch(e){ console.error('Resume session failed:', e); }
+}
 
 // ─── SESSION MODE ─────────────────────────────────────────────────
-let sessCtx={ph:1,wNum:1,dayIdx:0,day:null};
 
 function openSession(ph,wNum,dayIdx){
   const pData=ALL[ph-1];
@@ -2191,7 +2369,7 @@ function finishSession(){
   clearPersistedTimer();
   // Rebuild plan weights from newly logged data
   rebuildAWFromEquipment();
-  renderPhase(1); renderPhase(2); renderPhase(3);
+  renderPhase(1); renderPhase(2); renderPhase(3); renderPhase(4);
   renderSessionSteps();
   refreshCard(ph,wNum,dayIdx);
   renderPills(ph,ALL[ph-1],curW[ph]);
@@ -2708,7 +2886,7 @@ function analyseStrengthPerformance(si){
   const doneSets=logged.sets.filter(sv=>sv.done&&sv.weight&&sv.reps);
   if(!doneSets.length) return;
 
-  const phase=wNum<=16?1:wNum<=36?2:3;
+  const phase=wNum<=1?1:wNum<=7?1:wNum<=19?2:3;
   const weekData=ALL[phase-1]&&ALL[phase-1].find(w=>w.week===wNum);
   if(!weekData) return;
   const step=weekData.days[dayIdx]&&weekData.days[dayIdx].steps&&weekData.days[dayIdx].steps[si];
@@ -2759,43 +2937,81 @@ function getAdaptNotes(){
 }
 
 function rebuildAWFromEquipment(){
-  // Sync all AW values that depend on equipment
-  AW.sandbagLunge = eqState.sandbagKg || 20;
+  // 1. Sync equipment
+  AW.sandbagLunge = eqState.sandbagKg  || 20;
   AW.wallBall     = eqState.wallballKg || 9;
-  AW.sledKg       = eqState.sledKg || 0;
-  const dbs = eqState.dumbbells && eqState.dumbbells.length ? [...eqState.dumbbells].sort((a,b)=>a-b) : [25];
-  AW.farmerCarry  = Math.min(Math.max(...dbs), 25);
-  // Recalculate 1RM-based helpers from logged data if available
+  AW.sledKg       = eqState.sledKg     || 0;
+  const dbs = eqState.dumbbells && eqState.dumbbells.length
+    ? [...eqState.dumbbells].sort((a,b)=>a-b) : [25];
+  AW.farmerCarry = Math.min(Math.max(...dbs), 25);
+
+  // 2. Scan all logged sessions — use best ACTUAL weight ever achieved per lift
+  // This means the plan always progresses from your real capability, not estimates
   const hist = buildLiftHistoryQuick();
-  if(hist['Back Squat'])    AW.squat1rm    = Math.max(AW.squat1rm,    hist['Back Squat']);
-  if(hist['Deadlift'])      AW.deadlift1rm = Math.max(AW.deadlift1rm, hist['Deadlift']);
-  if(hist['RDL'])           AW.rdl1rm      = Math.max(AW.rdl1rm,      hist['RDL']);
-  if(hist['Bench Press'])   AW.bench       = Math.max(AW.bench,       hist['Bench Press']);
-  if(hist['Overhead Press'])AW.ohp         = Math.max(AW.ohp,         hist['Overhead Press']);
-  if(hist['Bent-over Row']) AW.bentRow     = Math.max(AW.bentRow,     hist['Bent-over Row']);
-  if(hist['DB Row'])        AW.bentRow     = Math.max(AW.bentRow,     hist['DB Row']);
+  const LIFT_TO_AW = {
+    'Back Squat':    ['squat1rm',    1.0],  // logged weight → 1RM (assume ~5RM logged)
+    'Deadlift':      ['deadlift1rm', 1.0],
+    'RDL':           ['rdl1rm',      1.0],
+    'Bench Press':   ['bench',       1.0],
+    'Overhead Press':['ohp',         1.0],
+    'Bent-over Row': ['bentRow',     1.0],
+    'DB Row':        ['bentRow',     1.0],
+    'Lying DB Hamstring Curl':['curl',1.0],
+  };
+  Object.entries(LIFT_TO_AW).forEach(([liftName,[awKey,mult]])=>{
+    if(hist[liftName]){
+      const logged = hist[liftName];
+      // Use Epley formula to estimate 1RM if reps > 1
+      const est1rm = hist[liftName+'_reps']
+        ? logged * (1 + hist[liftName+'_reps'] / 30)
+        : logged;
+      // Only update upward — never reduce from logged best
+      AW[awKey] = Math.max(AW[awKey] || 0, Math.round(est1rm * mult / 2.5) * 2.5);
+    }
+  });
+
+  // 3. Also check adaptation state for downward adjustments
+  const adapt = loadAdaptState();
+  Object.entries({squat1rm:'squat1rm_adj',deadlift1rm:'deadlift1rm_adj',
+                  bench:'bench_adj',ohp:'ohp_adj',bentRow:'bentRow_adj'}).forEach(([awKey,adaptKey])=>{
+    if(adapt[adaptKey] && adapt[adaptKey] < AW[awKey]){
+      // Only apply downward adjustment if it's been confirmed by 3+ sessions
+      // (analyseStrengthPerformance handles this check — trust its output)
+      AW[awKey] = adapt[adaptKey];
+    }
+  });
 }
 
-// Quick version of buildLiftHistory that returns just best weight per lift
+// Quick version of buildLiftHistory — returns best weight AND reps per lift
 function buildLiftHistoryQuick(){
-  const best={};
+  const best={}, bestReps={};
   for(const key of Object.keys(actLog)){
     const m=key.match(/^w(\d+)_d(\d+)_s(\d+)$/);
     if(!m) continue;
     const [,w,d,s]=[...m].map(Number);
     const logData=actLog[key];
     if(!logData||!logData.sets||!logData.sets.length) continue;
-    const phase=w<=16?1:w<=36?2:3;
+    const phase=w<=1?1:w<=7?1:w<=19?2:3; // week 1=holiday, treated as block 1
     const weekData=ALL[phase-1]&&ALL[phase-1].find(wk=>wk.week===w);
     if(!weekData) continue;
-    const step=weekData.days[d]&&weekData.days[d].steps&&weekData.days[d].steps[s];
+    const dayData=weekData.days[d];
+    if(!dayData||!dayData.steps) continue;
+    const step=dayData.steps[s];
     if(!step) continue;
     const liftName=liftNameFromLabel(step.label||'');
     if(!liftName) continue;
-    const maxW=Math.max(...logData.sets.filter(sv=>sv.done&&sv.weight).map(sv=>parseFloat(sv.weight)||0));
-    if(maxW>0) best[liftName]=Math.max(best[liftName]||0, maxW);
+    const doneSets=logData.sets.filter(sv=>sv.done&&sv.weight&&sv.reps);
+    if(!doneSets.length) continue;
+    // Find the best set (highest weight)
+    const bestSet=doneSets.reduce((b,sv)=>parseFloat(sv.weight)>parseFloat(b.weight)?sv:b, doneSets[0]);
+    const w_val=parseFloat(bestSet.weight)||0;
+    const r_val=parseInt(bestSet.reps)||5;
+    if(w_val>0 && w_val>(best[liftName]||0)){
+      best[liftName]=w_val;
+      bestReps[liftName+'_reps']=r_val;
+    }
   }
-  return best;
+  return {...best,...bestReps};
 }
 
 function saveEquipment(){
@@ -2826,7 +3042,7 @@ function saveEquipment(){
   updateEquipmentHeaderBtn();
 
   // Re-render all phases so every session step recalculates with new kit
-  renderPhase(1); renderPhase(2); renderPhase(3);
+  renderPhase(1); renderPhase(2); renderPhase(3); renderPhase(4);
 
   closeEquipment();
   // Flash confirmation
@@ -2911,7 +3127,7 @@ function buildLiftHistory(){
     if(!logData||!logData.sets||!logData.sets.length) continue;
 
     // Find what exercise this was
-    const phase=w<=16?1:w<=36?2:3;
+    const phase=w<=1?1:w<=7?1:w<=19?2:3; // week 1=holiday, treated as block 1
     const phaseIdx=phase-1;
     const pData=ALL[phaseIdx];
     const weekData=pData&&pData.find(wk=>wk.week===w);
@@ -2961,7 +3177,7 @@ function closeManualTime(){
 
 function updateManualWeekOptions(){
   const ph=parseInt(document.getElementById('mt-phase').value)||1;
-  const ranges={1:[1,16],2:[17,36],3:[37,48]};
+  const ranges={1:[2,7],2:[8,19],3:[20,23]};
   const [s,e]=ranges[ph]||[1,16];
   const sel=document.getElementById('mt-week');
   if(!sel) return;
@@ -3361,7 +3577,8 @@ function saveBodyStat(){
 function setPhase(p){
   currentPhase=p;
   document.querySelectorAll('.phase-section').forEach(s=>s.classList.remove('active'));
-  document.getElementById('phase-'+p).classList.add('active');
+  const el=document.getElementById('phase-'+p);
+  if(el) el.classList.add('active');
   document.querySelectorAll('.pbtn').forEach((b,i)=>b.classList.toggle('active',i===p-1));
   saveCurW();
 }
@@ -3370,10 +3587,12 @@ function setPhase(p){
 // On startup — update AW from any previously logged session data
 // This means the plan weights adapt upward as you get stronger
 rebuildAWFromEquipment();
-renderPhase(1);renderPhase(2);renderPhase(3);updateProgress();
+renderPhase(1);renderPhase(2);renderPhase(3);renderPhase(4);updateProgress();
+resumePersistedSession();
 updateEquipmentStrip();
 updateEquipmentHeaderBtn();
 document.getElementById('stravaModal').addEventListener('click',function(e){if(e.target===this)closeStrava();});
+if(document.getElementById('skipModal')) document.getElementById('skipModal').addEventListener('click',function(e){if(e.target===this)closeSkipModal();});
 document.getElementById('eqModal').addEventListener('click',function(e){if(e.target===this)closeEquipment();});
 document.getElementById('dashModal').addEventListener('click',function(e){if(e.target===this)closeDash();});
 
